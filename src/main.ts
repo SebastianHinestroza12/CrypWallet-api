@@ -3,7 +3,7 @@ import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { sequelize } from './database';
+import { sequelize } from './models';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,7 +27,7 @@ app.listen(PORT, () => {
     try {
       await sequelize.authenticate();
       console.log('DB connection established 💯🖥️.');
-      await sequelize.sync();
+      await sequelize.sync({ force: true });
     } catch (error) {
       console.error('Connection to DB failed:', error);
     }
