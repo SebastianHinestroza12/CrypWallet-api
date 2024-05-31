@@ -1,6 +1,7 @@
 import { verifyToken } from '../utils/jwt';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import status from 'http-status';
 
 interface CustomRequest extends Request {
   user?: string | JwtPayload;
@@ -16,7 +17,7 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
   const { token } = req.cookies;
 
   if (!token || typeof token !== 'string') {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    return res.status(status.NOT_FOUND).json({ message: 'Access denied. No token provided.' });
   }
 
   try {
@@ -24,7 +25,7 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Unauthorized access' });
+    return res.status(status.NOT_FOUND).json({ message: 'Unauthorized access' });
   }
 };
 
