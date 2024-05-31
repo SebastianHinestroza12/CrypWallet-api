@@ -6,6 +6,7 @@ import cors from 'cors';
 import { sequelize } from './models';
 import helmet from 'helmet';
 import { globalErrorHandler, notFoundHandler } from './middlewares/errorHandler';
+import { authRoute } from './routes/auth.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,9 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH DELETE');
   next();
 });
+
+//Authentication routes
+app.use('/api/v1/auth', authRoute);
 
 //No found route
 app.use(notFoundHandler);
