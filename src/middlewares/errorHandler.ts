@@ -5,7 +5,10 @@ import status from 'http-status';
 export const globalErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err) {
     logger.error(err);
-    return res.status(status.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Errordd' });
+    return res.status(status.INTERNAL_SERVER_ERROR).json({
+      error: 'Internal Server Error',
+      message: err.message,
+    });
   }
   next();
 };

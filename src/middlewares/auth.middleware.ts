@@ -7,11 +7,7 @@ interface CustomRequest extends Request {
 }
 
 const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): Response | void => {
-  const excludedPaths = [
-    '/api/v1/auth/login',
-    '/api/v1/auth/register',
-    '/api/v1/auth/recover-password',
-  ];
+  const excludedPaths = ['/api/v1/auth/login', '/api/v1/auth/register'];
 
   if (excludedPaths.includes(req.path)) {
     return next();
