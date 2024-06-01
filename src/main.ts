@@ -6,6 +6,8 @@ import cors from 'cors';
 import { sequelize } from './models';
 import helmet from 'helmet';
 import { globalErrorHandler, notFoundHandler } from './middlewares/errorHandler';
+import { authRoute } from './routes/auth.routes';
+import { authMiddleware } from './middlewares/auth.middleware';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,10 +26,16 @@ app.use((req, res, next) => {
   next();
 });
 
+//Middleware to authenticate
+app.use(authMiddleware);
+
+//Authentication routes
+app.use('/api/v1/auth', authRoute);
+
 //No found route
 app.use(notFoundHandler);
 
-// Error handling middleware
+//|Error handling middleware
 app.use(globalErrorHandler);
 
 app.listen(PORT, () => {

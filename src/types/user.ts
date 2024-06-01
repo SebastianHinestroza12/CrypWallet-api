@@ -5,9 +5,11 @@ export type UserAttributes = {
   name: string;
   lastName: string;
   email: string;
-  password: number;
+  password: string;
   isActive?: boolean;
   registrationDate?: number;
 };
 
 export type UserCreationAttributes = Optional<UserAttributes, 'id'>;
+export type OptionalUserAttributes = Partial<UserAttributes>;
+export type RegisterUserAttributes = Omit<UserAttributes, 'id' | 'isActive' | 'registrationDate'>;

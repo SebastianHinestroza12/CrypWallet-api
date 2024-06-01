@@ -40,13 +40,10 @@ export const User = sequelize.define<UserInstance>(
       },
     },
     password: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
-        isInt: true,
-        min: 6,
-        max: 6,
       },
     },
     isActive: {
