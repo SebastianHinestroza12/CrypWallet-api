@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
+import { sequelize } from '../database';
 import status from 'http-status';
 
 class AuthController {
@@ -14,6 +15,8 @@ class AuthController {
     }
     const { email, name, lastName, password } = req.body as RegisterUserAttributes;
 
+    const transaction = await sequelize.transaction();
+
     try {
       //Verificar si el usuario ya existe
       const existingUser = await AuthService.findUserByEmail(email);
@@ -22,12 +25,14 @@ class AuthController {
       }
 
       //Registtrar al usuario
-      const user = await AuthService.register({ name, lastName, email, password });
+      const user = await AuthService.register({ name, lastName, email, password }, transaction);
 
       //Crear las palabras de seguridad para el usuario
-      const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id);
+      const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id, transaction);
 
       //Crear la billetera del usuario
+
+      await transaction.commit();
 
       return res.status(status.CREATED).json({
         message: 'User created successfully',
@@ -35,6 +40,7 @@ class AuthController {
         safeWords: safeWords.words,
       });
     } catch (error) {
+      await transaction.rollback();
       next(error);
     }
   };
