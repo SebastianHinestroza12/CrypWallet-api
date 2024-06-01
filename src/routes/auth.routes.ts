@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
+import { validateUserRegistration, validateUserLogin } from '../validations/auth.validate';
 
 const authRoute = Router();
 
-authRoute.post('/register', AuthController.register);
-authRoute.post('/login', AuthController.login);
+authRoute.post('/register', validateUserRegistration(), AuthController.register);
+authRoute.post('/login', validateUserLogin(), AuthController.login);
 
 export { authRoute };

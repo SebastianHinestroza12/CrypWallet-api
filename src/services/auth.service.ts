@@ -1,9 +1,9 @@
 import { comparePassword, generateToken, hashPassword } from '../utils';
-import { UserAttributes } from '../types';
+import { RegisterUserAttributes, UserAttributes } from '../types';
 import { User } from '../models/User';
 
 class AuthService {
-  static async register(userData: UserAttributes): Promise<UserAttributes> {
+  static async register(userData: RegisterUserAttributes): Promise<UserAttributes> {
     const { name, lastName, email, password } = userData;
     const hashedPassword = await hashPassword(password);
     const user = await User.create({
@@ -35,6 +35,16 @@ class AuthService {
 
     const token = generateToken(user);
     return token;
+  }
+
+  static async findUserByEmail(email: string): Promise<UserAttributes | null> {
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+
+    return user;
   }
 }
 

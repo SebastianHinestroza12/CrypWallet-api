@@ -11,3 +11,5 @@ export type UserAttributes = {
 };
 
 export type UserCreationAttributes = Optional<UserAttributes, 'id'>;
+export type OptionalUserAttributes = Partial<UserAttributes>;
+export type RegisterUserAttributes = Omit<UserAttributes, 'id' | 'isActive' | 'registrationDate'>;
