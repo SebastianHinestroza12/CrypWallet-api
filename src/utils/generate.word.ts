@@ -1,4 +1,4 @@
-import { wordDictionary } from '../configs/word.dictionary';
+import { wordDictionary } from '../helper/word.dictionary';
 
 export const generateSafeWords = (): string[] => {
   const safeWords: string[] = [];
