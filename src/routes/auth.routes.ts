@@ -7,5 +7,6 @@ const authRoute = Router();
 
 authRoute.post('/register', validateUserRegistration(), AuthController.register);
 authRoute.post('/login', validateUserLogin(), AuthController.login);
+authRoute.post('/logout', AuthController.logout);
 
 export { authRoute };
