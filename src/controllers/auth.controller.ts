@@ -5,6 +5,7 @@ import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
 import { sequelize } from '../database';
 import status from 'http-status';
+import { WalletService } from '../services/wallet.service';
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {
@@ -30,13 +31,15 @@ class AuthController {
       //Crear las palabras de seguridad para el usuario
       const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id, transaction);
 
-      //Crear la billetera del usuario
+      //Crear la billetera inicial del usuario
+      const createWallet = await WalletService.createWallet(user.id, transaction);
 
       await transaction.commit();
 
       return res.status(status.CREATED).json({
         message: 'User created successfully',
         user,
+        wallet: createWallet,
         safeWords: safeWords.words,
       });
     } catch (error) {
@@ -67,6 +70,16 @@ class AuthController {
     } catch (e) {
       const error = <Error>e;
       return res.status(status.NOT_FOUND).json({ message: error.message });
+    }
+  };
+
+  static readonly logout = (req: Request, res: Response) => {
+    try {
+      res.clearCookie('token');
+      return res.status(status.OK).json({ message: 'Logout successful' });
+    } catch (e) {
+      const error = <Error>e;
+      return res.status(status.BAD_REQUEST).json({ message: error.message });
     }
   };
 }

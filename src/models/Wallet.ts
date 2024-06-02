@@ -8,6 +8,7 @@ export const Wallet = sequelize.define<WalletInstance>(
   {
     id: {
       type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
       unique: true,
     },
@@ -16,7 +17,6 @@ export const Wallet = sequelize.define<WalletInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        isAlpha: true,
         len: [2, 50],
       },
     },
@@ -37,7 +37,7 @@ export const Wallet = sequelize.define<WalletInstance>(
       unique: true,
       validate: {
         notEmpty: true,
-        isAlpha: true,
+        isAlphanumeric: true,
       },
     },
     manageCrypto: {
