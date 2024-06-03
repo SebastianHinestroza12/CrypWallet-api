@@ -5,7 +5,8 @@ import {
   validateUserRegistration,
   validateUserLogin,
   validateEmail,
-  validateUpdatePassword,
+  validateChangePassword,
+  nameLastNameValidation,
 } from '../validations/auth.validate';
 import { validateSafeWords } from '../validations/safe.words.validate';
 
@@ -15,7 +16,17 @@ authRoute.post('/register', validateUserRegistration(), AuthController.register)
 authRoute.post('/login', validateUserLogin(), AuthController.login);
 authRoute.post('/verify-email', validateEmail(), AuthController.verifyEmail);
 authRoute.post('/verify-safe-words', validateSafeWords(), AuthController.verifySafeWords);
-authRoute.patch('/update-password', validateUpdatePassword(), AuthController.updateUserPassword);
 authRoute.post('/logout', AuthController.logout);
+authRoute.put('/profile/update/:id', nameLastNameValidation(), AuthController.updateProfile);
+authRoute.patch(
+  '/users/:id/update-password-with-safe-words',
+  validateChangePassword(),
+  AuthController.changePassword,
+);
+authRoute.patch(
+  '/users/:id/update-password-profile',
+  validateChangePassword(),
+  AuthController.changePassword,
+);
 
 export { authRoute };

@@ -71,11 +71,11 @@ class AuthService {
   }
 
   static async updateUserPassword(
-    userId: string,
+    id: string,
     newPassword: string,
     repiteNewPassword: string,
   ): Promise<boolean | Error> {
-    const findUser = await this.findUserById(userId);
+    const findUser = await this.findUserById(id);
 
     if (!findUser) {
       throw new Error('User does not exist');
@@ -86,10 +86,7 @@ class AuthService {
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    const [affectedCount] = await User.update(
-      { password: hashedPassword },
-      { where: { id: userId } },
-    );
+    const [affectedCount] = await User.update({ password: hashedPassword }, { where: { id } });
 
     if (affectedCount === 0) {
       throw new Error('Failed to update password');
@@ -98,8 +95,24 @@ class AuthService {
     return true;
   }
 
-  private static findUserById(userId: string): Promise<UserAttributes | null> {
+  private static findUserById(userId: string): Promise<InstanceType<typeof User> | null> {
     return User.findByPk(userId);
+  }
+
+  static async updateUserById(
+    userId: string,
+    userData: Partial<UserAttributes>,
+    transaction: Transaction,
+  ): Promise<InstanceType<typeof User>> {
+    const findUser = await this.findUserById(userId);
+
+    if (!findUser) {
+      throw new Error('User does not exist');
+    }
+
+    await findUser.update(userData, { transaction });
+
+    return findUser;
   }
 }
 
