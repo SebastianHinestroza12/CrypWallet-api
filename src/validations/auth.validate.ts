@@ -12,17 +12,18 @@ const emailValidation = (): ValidationChain => {
     .normalizeEmail();
 };
 
-const passwordValidation = (): ValidationChain => {
-  return body('password')
+const passwordValidation = (attribute: string): ValidationChain => {
+  const attr: string = attribute.toUpperCase();
+  return body(attribute)
     .trim()
     .notEmpty()
-    .withMessage('Password is required')
+    .withMessage(`${attr} is required`)
     .isString()
-    .withMessage('Password must be a string')
+    .withMessage(`${attr} must be a string`)
     .isLength({ min: 6, max: 6 })
-    .withMessage('Password must be exactly 6 characters long')
+    .withMessage(`${attr} must be exactly 6 characters long`)
     .matches(/^[0-9]+$/)
-    .withMessage('Password must contain only numbers');
+    .withMessage(`${attr} must contain only numbers`);
 };
 
 const validateUserRegistration = (): ValidationChain[] => {
@@ -44,12 +45,30 @@ const validateUserRegistration = (): ValidationChain[] => {
       .withMessage('Last name must contain a minimum of 3 characters and a maximum of 20'),
 
     emailValidation(),
-    passwordValidation(),
+    passwordValidation('password'),
   ];
 };
 
 const validateUserLogin = (): ValidationChain[] => {
-  return [emailValidation(), passwordValidation()];
+  return [emailValidation(), passwordValidation('password')];
 };
 
-export { validateUserRegistration, validateUserLogin };
+const validateEmail = (): ValidationChain[] => {
+  return [emailValidation()];
+};
+
+const validateUpdatePassword = (): ValidationChain[] => {
+  return [
+    body('userId')
+      .trim()
+      .notEmpty()
+      .withMessage('UserId is required')
+      .isString()
+      .isUUID()
+      .withMessage('Must be in UUID format'),
+    passwordValidation('newPassword'),
+    passwordValidation('repiteNewPassword'),
+  ];
+};
+
+export { validateUserRegistration, validateUserLogin, validateEmail, validateUpdatePassword };

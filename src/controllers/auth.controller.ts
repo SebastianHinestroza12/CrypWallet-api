@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
 import { sequelize } from '../database';
+import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
 import status from 'http-status';
 import { WalletService } from '../services/wallet.service';
 
@@ -72,6 +73,65 @@ class AuthController {
       return res.status(status.NOT_FOUND).json({ message: error.message });
     }
   };
+
+  static readonly verifyEmail = async <T>(req: Request, res: Response): Promise<T> => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() }) as unknown as T;
+    }
+    try {
+      const { email } = req.body as UserAttributes;
+      const user = await AuthService.findUserByEmail(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return res.status(status.OK).json({
+        registered: true,
+        user,
+      }) as unknown as T;
+    } catch (e) {
+      const error = <Error>e;
+      return res.status(status.NOT_FOUND).json({ message: error.message }) as unknown as T;
+    }
+  };
+
+  static readonly verifySafeWords = async <T>(
+    req: Request<unknown, unknown, VerifySafeWordsRequestBody>,
+    res: Response,
+  ): Promise<T> => {
+    const errors = validationResult(req as Request);
+    if (!errors.isEmpty()) {
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() }) as unknown as T;
+    }
+    try {
+      const { userId, words } = req.body;
+
+      const safeWords = await AuthService.verifySafeWords(userId, words);
+      return res.status(status.OK).json({
+        status: safeWords,
+        menssage: 'Safeword verification successful!!',
+      }) as unknown as T;
+    } catch (e) {
+      const error = <Error>e;
+      return res.status(status.NOT_FOUND).json({ message: error.message }) as unknown as T;
+    }
+  };
+
+  static readonly updateUserPassword = async (
+    req: Request<unknown, unknown, UpdatePassword>,
+    res: Response,
+  ) => {
+    const errors = validationResult(req as Request);
+    if (!errors.isEmpty()) {
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
+    }
+    try {
+      const { userId, newPassword, repiteNewPassword } = req.body;
+      await AuthService.updateUserPassword(userId, newPassword, repiteNewPassword);
+      return res.status(status.OK).json({
+        message: 'Password updated successfully',
+      });
 
   static readonly logout = (req: Request, res: Response) => {
     try {
