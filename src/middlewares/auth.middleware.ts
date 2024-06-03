@@ -9,14 +9,14 @@ interface CustomRequest extends Request {
 
 const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): Response | void => {
   const excludedPaths = [
-    '/api/v1/auth/login',
-    '/api/v1/auth/register',
-    '/api/v1/auth/verify-email',
-    '/api/v1/auth/verify-safe-words',
-    '/api/v1/auth/update-password',
+    /^\/api\/v1\/auth\/login$/,
+    /^\/api\/v1\/auth\/register$/,
+    /^\/api\/v1\/auth\/verify-email$/,
+    /^\/api\/v1\/auth\/verify-safe-words$/,
+    /^\/api\/v1\/auth\/users\/[\w-]+\/update-password-with-safe-words$/,
   ];
 
-  if (excludedPaths.includes(req.path)) {
+  if (excludedPaths.some((regex) => regex.test(req.path))) {
     return next();
   }
 

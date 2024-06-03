@@ -44,7 +44,7 @@ export interface VerifySafeWordsRequestBody {
 }
 
 export interface UpdatePassword {
-  userId: string;
+  id: string;
   newPassword: string;
   repiteNewPassword: string;
 }

@@ -51,7 +51,6 @@ export const Transaction = sequelize.define(
       },
       validate: {
         notEmpty: true,
-        isAlpha: true,
       },
     },
     typeId: {
