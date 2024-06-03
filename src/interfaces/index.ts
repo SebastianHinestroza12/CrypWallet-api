@@ -37,3 +37,14 @@ export interface SafeWordsInstance
 export interface WalletInstance
   extends Model<WalletAttributes, WalletCreationAttributes>,
     WalletAttributes {}
+
+export interface VerifySafeWordsRequestBody {
+  userId: string;
+  words: string[];
+}
+
+export interface UpdatePassword {
+  userId: string;
+  newPassword: string;
+  repiteNewPassword: string;
+}
