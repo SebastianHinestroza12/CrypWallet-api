@@ -17,7 +17,10 @@ export const Wallet = sequelize.define<WalletInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        len: [2, 50],
+        len: {
+          args: [2, 50],
+          msg: 'Name must be between 2 and 50 characters',
+        },
       },
     },
     userId: {

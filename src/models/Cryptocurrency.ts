@@ -11,7 +11,6 @@ export const Cryptocurrency = sequelize.define<CryptocurrencyInstance>(
       unique: true,
       validate: {
         notEmpty: true,
-        isAlpha: true,
       },
     },
     name: {
@@ -19,7 +18,6 @@ export const Cryptocurrency = sequelize.define<CryptocurrencyInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        isAlpha: true,
       },
     },
     symbol: {
@@ -27,7 +25,6 @@ export const Cryptocurrency = sequelize.define<CryptocurrencyInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        isAlpha: true,
       },
     },
   },
