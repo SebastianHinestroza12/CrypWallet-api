@@ -132,6 +132,11 @@ class AuthController {
       return res.status(status.OK).json({
         message: 'Password updated successfully',
       });
+    } catch (e) {
+      const error = <Error>e;
+      return res.status(status.BAD_REQUEST).json({ message: error.message });
+    }
+  };
 
   static readonly logout = (req: Request, res: Response) => {
     try {
