@@ -1,4 +1,4 @@
-import { body, ValidationChain } from 'express-validator';
+import { body, param, ValidationChain } from 'express-validator';
 
 const emailValidation = (): ValidationChain => {
   return body('email')
@@ -12,6 +12,25 @@ const emailValidation = (): ValidationChain => {
     .normalizeEmail();
 };
 
+const nameLastNameValidation = (): ValidationChain[] => {
+  return [
+    body('name')
+      .trim()
+      .isString()
+      .withMessage('Numbers are not accepted, only letters')
+      .isLength({ min: 3, max: 20 })
+      .withMessage('Name must contain a minimum of 3 characters and a maximum of 20')
+      .optional(),
+    body('lastName')
+      .trim()
+      .isString()
+      .withMessage('Numbers are not accepted, only letters')
+      .isLength({ min: 3, max: 20 })
+      .withMessage('Last name must contain a minimum of 3 characters and a maximum of 20')
+      .optional(),
+  ];
+};
+
 const passwordValidation = (attribute: string): ValidationChain => {
   const attr: string = attribute.toUpperCase();
   return body(attribute)
@@ -22,7 +41,7 @@ const passwordValidation = (attribute: string): ValidationChain => {
     .withMessage(`${attr} must be a string`)
     .isLength({ min: 6, max: 6 })
     .withMessage(`${attr} must be exactly 6 characters long`)
-    .matches(/^[0-9]+$/)
+    .matches(/^\d+$/)
     .withMessage(`${attr} must contain only numbers`);
 };
 
@@ -31,19 +50,19 @@ const validateUserRegistration = (): ValidationChain[] => {
     body('name')
       .trim()
       .notEmpty()
-      .withMessage('Name is required')
+      .withMessage('name is required')
       .isString()
       .withMessage('Numbers are not accepted, only letters')
       .isLength({ min: 3, max: 20 })
       .withMessage('Name must contain a minimum of 3 characters and a maximum of 20'),
-
     body('lastName')
       .trim()
+      .notEmpty()
+      .withMessage('lastName is required')
       .isString()
       .withMessage('Numbers are not accepted, only letters')
       .isLength({ min: 3, max: 20 })
       .withMessage('Last name must contain a minimum of 3 characters and a maximum of 20'),
-
     emailValidation(),
     passwordValidation('password'),
   ];
@@ -57,12 +76,12 @@ const validateEmail = (): ValidationChain[] => {
   return [emailValidation()];
 };
 
-const validateUpdatePassword = (): ValidationChain[] => {
+const validateChangePassword = (): ValidationChain[] => {
   return [
-    body('userId')
+    param('id')
       .trim()
       .notEmpty()
-      .withMessage('UserId is required')
+      .withMessage('id is required')
       .isString()
       .isUUID()
       .withMessage('Must be in UUID format'),
@@ -71,4 +90,10 @@ const validateUpdatePassword = (): ValidationChain[] => {
   ];
 };
 
-export { validateUserRegistration, validateUserLogin, validateEmail, validateUpdatePassword };
+export {
+  validateUserRegistration,
+  validateUserLogin,
+  validateEmail,
+  validateChangePassword,
+  nameLastNameValidation,
+};

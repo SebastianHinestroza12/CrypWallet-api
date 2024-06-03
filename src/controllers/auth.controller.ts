@@ -118,7 +118,7 @@ class AuthController {
     }
   };
 
-  static readonly updateUserPassword = async (
+  static readonly changePassword = async (
     req: Request<unknown, unknown, UpdatePassword>,
     res: Response,
   ) => {
@@ -127,8 +127,9 @@ class AuthController {
       return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
     }
     try {
-      const { userId, newPassword, repiteNewPassword } = req.body;
-      await AuthService.updateUserPassword(userId, newPassword, repiteNewPassword);
+      const { id } = req.params as UpdatePassword;
+      const { newPassword, repiteNewPassword } = req.body;
+      await AuthService.updateUserPassword(id, newPassword, repiteNewPassword);
       return res.status(status.OK).json({
         message: 'Password updated successfully',
       });
@@ -143,6 +144,27 @@ class AuthController {
       res.clearCookie('token');
       return res.status(status.OK).json({ message: 'Logout successful' });
     } catch (e) {
+      const error = <Error>e;
+      return res.status(status.BAD_REQUEST).json({ message: error.message });
+    }
+  };
+
+  static readonly updateProfile = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
+    }
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const userData = req.body as UserAttributes;
+      const profile = await AuthService.updateUserById(id, userData, transaction);
+
+      await transaction.commit();
+
+      return res.status(status.OK).json({ message: 'Profile updated successfully', user: profile });
+    } catch (e) {
+      await transaction.rollback();
       const error = <Error>e;
       return res.status(status.BAD_REQUEST).json({ message: error.message });
     }
