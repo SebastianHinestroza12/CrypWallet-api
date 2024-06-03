@@ -2,17 +2,24 @@ import { comparePassword, generateToken, hashPassword } from '../utils';
 import { RegisterUserAttributes, UserAttributes } from '../types';
 import { User } from '../models/User';
 import { SafeWords } from '../models/SafeWords';
+import { Transaction } from 'sequelize';
 
 class AuthService {
-  static async register(userData: RegisterUserAttributes): Promise<UserAttributes> {
+  static async register(
+    userData: RegisterUserAttributes,
+    transaction: Transaction,
+  ): Promise<UserAttributes> {
     const { name, lastName, email, password } = userData;
     const hashedPassword = await hashPassword(password);
-    const user = await User.create({
-      name,
-      lastName,
-      email,
-      password: hashedPassword,
-    });
+    const user = await User.create(
+      {
+        name,
+        lastName,
+        email,
+        password: hashedPassword,
+      },
+      { transaction },
+    );
 
     return user;
   }

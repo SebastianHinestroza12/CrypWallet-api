@@ -3,8 +3,10 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
+import { sequelize } from '../database';
 import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
 import status from 'http-status';
+import { WalletService } from '../services/wallet.service';
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,6 +17,8 @@ class AuthController {
     }
     const { email, name, lastName, password } = req.body as RegisterUserAttributes;
 
+    const transaction = await sequelize.transaction();
+
     try {
       //Verificar si el usuario ya existe
       const existingUser = await AuthService.findUserByEmail(email);
@@ -23,19 +27,24 @@ class AuthController {
       }
 
       //Registtrar al usuario
-      const user = await AuthService.register({ name, lastName, email, password });
+      const user = await AuthService.register({ name, lastName, email, password }, transaction);
 
       //Crear las palabras de seguridad para el usuario
-      const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id);
+      const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id, transaction);
 
-      //Crear la billetera del usuario
+      //Crear la billetera inicial del usuario
+      const createWallet = await WalletService.createWallet(user.id, transaction);
+
+      await transaction.commit();
 
       return res.status(status.CREATED).json({
         message: 'User created successfully',
         user,
+        wallet: createWallet,
         safeWords: safeWords.words,
       });
     } catch (error) {
+      await transaction.rollback();
       next(error);
     }
   };
@@ -123,6 +132,11 @@ class AuthController {
       return res.status(status.OK).json({
         message: 'Password updated successfully',
       });
+
+  static readonly logout = (req: Request, res: Response) => {
+    try {
+      res.clearCookie('token');
+      return res.status(status.OK).json({ message: 'Logout successful' });
     } catch (e) {
       const error = <Error>e;
       return res.status(status.BAD_REQUEST).json({ message: error.message });
