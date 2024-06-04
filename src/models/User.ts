@@ -17,8 +17,10 @@ export const User = sequelize.define<UserInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        isAlpha: true,
-        len: [2, 50],
+        len: {
+          args: [2, 50],
+          msg: 'Name must be between 2 and 50 characters',
+        },
       },
     },
     lastName: {
@@ -26,8 +28,10 @@ export const User = sequelize.define<UserInstance>(
       allowNull: false,
       validate: {
         notEmpty: true,
-        isAlpha: true,
-        len: [2, 50],
+        len: {
+          args: [2, 50],
+          msg: 'Name must be between 2 and 50 characters',
+        },
       },
     },
     email: {
