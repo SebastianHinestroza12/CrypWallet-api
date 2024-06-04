@@ -13,6 +13,7 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
     /^\/api\/v1\/auth\/register$/,
     /^\/api\/v1\/auth\/verify-email$/,
     /^\/api\/v1\/auth\/verify-safe-words$/,
+    /^\/api\/v1\/cryptocurrencies$/,
     /^\/api\/v1\/auth\/users\/[\w-]+\/update-password-with-safe-words$/,
   ];
 

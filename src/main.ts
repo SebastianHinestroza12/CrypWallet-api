@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { globalErrorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { authRoute } from './routes/auth.routes';
 import { authMiddleware } from './middlewares/auth.middleware';
+import { crypoRouter } from './routes/crypto.routes';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -32,6 +33,9 @@ app.use(authMiddleware);
 //Authentication routes
 app.use('/api/v1/auth', authRoute);
 
+//Cryptocurrency routes
+app.use('/api/v1', crypoRouter);
+
 //No found route
 app.use(notFoundHandler);
 
@@ -44,7 +48,7 @@ app.listen(PORT, () => {
     try {
       await sequelize.authenticate();
       console.log('DB connection established 💯🖥️.');
-      await sequelize.sync({ force: true });
+      await sequelize.sync({ force: false });
     } catch (error) {
       console.error('Connection to DB failed:', error);
     }
