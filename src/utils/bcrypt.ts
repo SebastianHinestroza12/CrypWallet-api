@@ -1,12 +1,13 @@
 import bcrypt from 'bcrypt';
+import { IHashService } from '../interfaces/Authentication';
 
-const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
-};
+export class BcryptHashService implements IHashService {
+  async hashPassword(password: string): Promise<string> {
+    const SALT_WORK_FACTOR = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, SALT_WORK_FACTOR);
+  }
 
-const comparePassword = async (password: string, hash: string): Promise<boolean> => {
-  return bcrypt.compare(password, hash);
-};
-
-export { hashPassword, comparePassword };
+  async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+}
