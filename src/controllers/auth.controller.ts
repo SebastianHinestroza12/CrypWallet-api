@@ -27,9 +27,14 @@ class AuthController {
       if (existingUser) {
         return res.status(status.CONFLICT).json({ message: 'User already exists' });
       }
+      const nameDefaultWallet = 'Main Wallet 1';
       const user = await authService.register({ name, lastName, email, password }, transaction);
       const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id, transaction);
-      const createWallet = await WalletService.createWallet(user.id, transaction);
+      const createWallet = await WalletService.createWallet(
+        user.id,
+        nameDefaultWallet,
+        transaction,
+      );
       await transaction.commit();
       return res.status(status.CREATED).json({
         message: 'User created successfully',

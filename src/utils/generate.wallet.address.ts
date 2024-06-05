@@ -1,8 +1,9 @@
 import Wallet from 'ethereumjs-wallet';
+class WalletAddressGenerator {
+  static generate(): string {
+    const wallet = Wallet.generate();
+    return wallet.getAddressString();
+  }
+}
 
-const generateWalletAddress = (): string => {
-  const wallet = Wallet.generate();
-  return wallet.getAddressString();
-};
-
-export { generateWalletAddress };
+export { WalletAddressGenerator };
