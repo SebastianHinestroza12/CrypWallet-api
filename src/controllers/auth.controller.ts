@@ -3,40 +3,39 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
-import { sequelize } from '../database';
 import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
-import status from 'http-status';
 import { WalletService } from '../services/wallet.service';
+import { BcryptHashService, JwtTokenService } from '../utils';
+import { sequelize } from '../database';
+import status from 'http-status';
+
+const hashService = new BcryptHashService();
+const tokenService = new JwtTokenService();
+const authService = new AuthService(hashService, tokenService);
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {
-    //Validar datos de entrada
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
     }
     const { email, name, lastName, password } = req.body as RegisterUserAttributes;
-
     const transaction = await sequelize.transaction();
 
     try {
-      //Verificar si el usuario ya existe
-      const existingUser = await AuthService.findUserByEmail(email);
+      const existingUser = await authService.findUserByEmail(email);
       if (existingUser) {
         return res.status(status.CONFLICT).json({ message: 'User already exists' });
       }
-
-      //Registtrar al usuario
-      const user = await AuthService.register({ name, lastName, email, password }, transaction);
-
-      //Crear las palabras de seguridad para el usuario
+      const nameDefaultWallet = 'Main Wallet 1';
+      const user = await authService.register({ name, lastName, email, password }, transaction);
       const safeWords = await SafeWordsService.saveSafeWordsByUser(user.id, transaction);
-
-      //Crear la billetera inicial del usuario
-      const createWallet = await WalletService.createWallet(user.id, transaction);
-
+      const createWallet = await WalletService.createWallet(
+        user.id,
+        nameDefaultWallet,
+        transaction,
+      );
       await transaction.commit();
-
       return res.status(status.CREATED).json({
         message: 'User created successfully',
         user,
@@ -50,14 +49,13 @@ class AuthController {
   };
 
   static readonly login = async (req: Request, res: Response) => {
-    //Validar datos de entrada
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
     }
     try {
       const { email, password } = req.body as UserAttributes;
-      const token = await AuthService.login(email, password);
+      const token = await authService.login(email, password);
       res.cookie('token', token, {
         httpOnly: true,
         sameSite: 'strict',
@@ -74,47 +72,44 @@ class AuthController {
     }
   };
 
-  static readonly verifyEmail = async <T>(req: Request, res: Response): Promise<T> => {
+  static readonly verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() }) as unknown as T;
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
     }
     try {
       const { email } = req.body as UserAttributes;
-      const user = await AuthService.findUserByEmail(email);
+      const user = await authService.findUserByEmail(email);
       if (!user) {
-        throw new Error('User not found');
+        return res.status(status.NOT_FOUND).json({ message: 'User not found' });
       }
-
       return res.status(status.OK).json({
         registered: true,
         user,
-      }) as unknown as T;
+      });
     } catch (e) {
-      const error = <Error>e;
-      return res.status(status.NOT_FOUND).json({ message: error.message }) as unknown as T;
+      next(e);
     }
   };
 
-  static readonly verifySafeWords = async <T>(
+  static readonly verifySafeWords = async (
     req: Request<unknown, unknown, VerifySafeWordsRequestBody>,
     res: Response,
-  ): Promise<T> => {
+  ) => {
     const errors = validationResult(req as Request);
     if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() }) as unknown as T;
+      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
     }
     try {
       const { userId, words } = req.body;
-
-      const safeWords = await AuthService.verifySafeWords(userId, words);
+      await authService.verifySafeWords(userId, words);
       return res.status(status.OK).json({
-        status: safeWords,
+        status: true,
         menssage: 'Safeword verification successful!!',
-      }) as unknown as T;
+      });
     } catch (e) {
       const error = <Error>e;
-      return res.status(status.NOT_FOUND).json({ message: error.message }) as unknown as T;
+      return res.status(status.NOT_FOUND).json({ message: error.message });
     }
   };
 
@@ -129,7 +124,7 @@ class AuthController {
     try {
       const { id } = req.params as UpdatePassword;
       const { newPassword, repiteNewPassword } = req.body;
-      await AuthService.updateUserPassword(id, newPassword, repiteNewPassword);
+      await authService.updateUserPassword(id, newPassword, repiteNewPassword);
       return res.status(status.OK).json({
         message: 'Password updated successfully',
       });
@@ -158,10 +153,8 @@ class AuthController {
     try {
       const { id } = req.params;
       const userData = req.body as UserAttributes;
-      const profile = await AuthService.updateUserById(id, userData, transaction);
-
+      const profile = await authService.updateUserById(id, userData, transaction);
       await transaction.commit();
-
       return res.status(status.OK).json({ message: 'Profile updated successfully', user: profile });
     } catch (e) {
       await transaction.rollback();
