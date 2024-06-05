@@ -10,7 +10,7 @@ class TransactionController {
   ) => {
     try {
       const transactionType = await TransactionService.createTransactionType();
-      return res.status(status.OK).json({
+      return res.status(status.CREATED).json({
         message: 'Transaction type created successfully',
         transactionType,
       });
@@ -26,7 +26,7 @@ class TransactionController {
   ) => {
     try {
       const transactionStatus = await TransactionService.createTransactionStatus();
-      return res.status(status.OK).json({
+      return res.status(status.CREATED).json({
         message: 'Transaction status created successfully',
         transactionStatus,
       });
