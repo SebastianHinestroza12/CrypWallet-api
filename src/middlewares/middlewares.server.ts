@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
-import { authMiddleware } from './auth.middleware';
+import { AuthMiddleware } from './auth.middleware';
 
 export const middlewares = (app: Application): void => {
   app.use(express.urlencoded({ extended: false }));
@@ -21,6 +21,6 @@ export const middlewares = (app: Application): void => {
     next();
   });
 
-  // Middleware to authenticate
-  app.use(authMiddleware);
+  const authMiddlewareInstance = new AuthMiddleware();
+  app.use(authMiddlewareInstance.middleware.bind(authMiddlewareInstance));
 };

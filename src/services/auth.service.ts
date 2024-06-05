@@ -1,16 +1,24 @@
-import { comparePassword, generateToken, hashPassword } from '../utils';
 import { RegisterUserAttributes, UserAttributes } from '../types';
+import { IHashService, ITokenService } from '../interfaces/Authentication';
 import { User } from '../models/User';
 import { SafeWords } from '../models/SafeWords';
 import { Transaction } from 'sequelize';
 
 class AuthService {
-  static async register(
+  private hashService: IHashService;
+  private tokenService: ITokenService;
+
+  constructor(hashService: IHashService, tokenService: ITokenService) {
+    this.hashService = hashService;
+    this.tokenService = tokenService;
+  }
+
+  async register(
     userData: RegisterUserAttributes,
     transaction: Transaction,
   ): Promise<UserAttributes> {
     const { name, lastName, email, password } = userData;
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await this.hashService.hashPassword(password);
     const user = await User.create(
       {
         name,
@@ -24,35 +32,26 @@ class AuthService {
     return user;
   }
 
-  static async login(email: string, password: string): Promise<string> {
+  async login(email: string, password: string): Promise<string> {
     const user = await this.findUserByEmail(email);
 
     if (!user) {
       throw new Error('User not found');
     }
-
-    const isMatch = await comparePassword(password, user.password);
-
+    const isMatch = await this.hashService.comparePassword(password, user.password);
     if (!isMatch) {
       throw new Error('Incorrect password');
     }
-
-    const token = generateToken(user);
-    return token;
+    return this.tokenService.generateToken(user);
   }
 
-  static async findUserByEmail(email: string): Promise<UserAttributes | null> {
-    const user = await User.findOne({
-      where: {
-        email,
-        isActive: true,
-      },
+  async findUserByEmail(email: string): Promise<UserAttributes | null> {
+    return User.findOne({
+      where: { email, isActive: true },
     });
-
-    return user;
   }
 
-  static async verifySafeWords(userId: string, words: string[]): Promise<boolean | Error> {
+  async verifySafeWords(userId: string, words: string[]): Promise<boolean> {
     const safeWordsRecord = await SafeWords.findOne({ where: { userId } });
     if (!safeWordsRecord) {
       throw new Error('This user does not have safe words or does not exist');
@@ -71,49 +70,40 @@ class AuthService {
     return true;
   }
 
-  static async updateUserPassword(
+  async updateUserPassword(
     id: string,
     newPassword: string,
     repiteNewPassword: string,
-  ): Promise<boolean | Error> {
-    const findUser = await this.findUserById(id);
-
-    if (!findUser) {
-      throw new Error('User does not exist');
-    }
-
+  ): Promise<void> {
     if (newPassword !== repiteNewPassword) {
       throw new Error('Passwords do not match');
     }
-
-    const hashedPassword = await hashPassword(newPassword);
+    const findUser = await this.findUserById(id);
+    if (!findUser) {
+      throw new Error('User does not exist');
+    }
+    const hashedPassword = await this.hashService.hashPassword(newPassword);
     const [affectedCount] = await User.update({ password: hashedPassword }, { where: { id } });
-
     if (affectedCount === 0) {
       throw new Error('Failed to update password');
     }
-
-    return true;
   }
 
-  private static findUserById(userId: string): Promise<InstanceType<typeof User> | null> {
+  private findUserById(userId: string): Promise<InstanceType<typeof User> | null> {
     return User.findByPk(userId);
   }
 
-  static async updateUserById(
+  async updateUserById(
     userId: string,
     userData: Partial<UserAttributes>,
     transaction: Transaction,
   ): Promise<InstanceType<typeof User>> {
-    const findUser = await this.findUserById(userId);
-
-    if (!findUser) {
+    const user = await this.findUserById(userId);
+    if (!user) {
       throw new Error('User does not exist');
     }
-
-    await findUser.update(userData, { transaction });
-
-    return findUser;
+    await user.update(userData, { transaction });
+    return user;
   }
 }
 
