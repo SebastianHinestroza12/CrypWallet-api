@@ -7,11 +7,13 @@ import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
 import { WalletService } from '../services/wallet.service';
 import { BcryptHashService, JwtTokenService } from '../utils';
 import { sequelize } from '../database';
+import { EmailService } from '../services/email.service';
 import status from 'http-status';
 
 const hashService = new BcryptHashService();
 const tokenService = new JwtTokenService();
-const authService = new AuthService(hashService, tokenService);
+const emailService = new EmailService();
+const authService = new AuthService(hashService, tokenService, emailService);
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {

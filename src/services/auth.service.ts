@@ -3,14 +3,17 @@ import { IHashService, ITokenService } from '../interfaces/Authentication';
 import { User } from '../models/User';
 import { SafeWords } from '../models/SafeWords';
 import { Transaction } from 'sequelize';
+import { EmailService } from './email.service';
 
 class AuthService {
   private hashService: IHashService;
   private tokenService: ITokenService;
+  private emailService: EmailService;
 
-  constructor(hashService: IHashService, tokenService: ITokenService) {
+  constructor(hashService: IHashService, tokenService: ITokenService, emailService: EmailService) {
     this.hashService = hashService;
     this.tokenService = tokenService;
+    this.emailService = emailService;
   }
 
   async register(
@@ -29,6 +32,7 @@ class AuthService {
       { transaction },
     );
 
+    await this.emailService.sendWelcomeEmail(email, name);
     return user;
   }
 
