@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: server-wallet
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports: [3001:3001]
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./src
+    #     - action: rebuild
+    #       path: package.json
+    depends_on: [postgres_db]
+    environment:
+      PORT: ${PORT}
+      DB_USER: ${DB_USER}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      BASE_URL: ${BASE_URL}
+      API_SERVICE_CRYPTO: ${API_SERVICE_CRYPTO}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+    restart: always
+
+  postgres_db:
+    container_name: database-wallet
+    image: postgres:16.3-alpine3.20
+    ports: [5432:5432]
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+
+  manage_postgres:
+    container_name: pgAdmin-wallet
+    depends_on: [postgres_db]
+    image: dpage/pgadmin4:6.17
+    ports: [8080:80]
+    environment:
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    restart: always
+volumes:
+  postgres-data:
+  pgadmin-data:
