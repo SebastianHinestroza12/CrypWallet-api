@@ -22,7 +22,7 @@ app.listen(PORT, () => {
   void (async () => {
     try {
       await sequelize.authenticate();
-      console.log('DB connection established 💯🖥️.');
+      console.log('DB connection established💯🖥️.');
       await sequelize.sync({ force: true });
     } catch (error) {
       console.error('Connection to DB failed:', error);
