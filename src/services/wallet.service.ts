@@ -40,6 +40,10 @@ class WalletService {
       },
     );
   }
+
+  static async deleteWalletById(walletId: string): Promise<void> {}
+
+  static async findWalletById(walletId: string): Promise<void> {}
 }
 
 export { WalletService };
