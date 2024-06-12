@@ -1,6 +1,5 @@
 import { AuthService } from '../services/auth.service';
 import { Request, Response, NextFunction } from 'express';
-import { validationResult } from 'express-validator';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
 import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
@@ -9,6 +8,7 @@ import { BcryptHashService, JwtTokenService } from '../utils';
 import { sequelize } from '../database';
 import { EmailService } from '../services/email.service';
 import status from 'http-status';
+import { validateData } from '../helper/validateData';
 
 const hashService = new BcryptHashService();
 const tokenService = new JwtTokenService();
@@ -17,10 +17,7 @@ const authService = new AuthService(hashService, tokenService, emailService);
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req, res);
     const { email, name, lastName, password } = req.body as RegisterUserAttributes;
     const transaction = await sequelize.transaction();
 
@@ -51,10 +48,7 @@ class AuthController {
   };
 
   static readonly login = async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req, res);
     try {
       const { email, password } = req.body as UserAttributes;
       const token = await authService.login(email, password);
@@ -75,10 +69,7 @@ class AuthController {
   };
 
   static readonly verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req, res);
     try {
       const { email } = req.body as UserAttributes;
       const user = await authService.findUserByEmail(email);
@@ -98,10 +89,7 @@ class AuthController {
     req: Request<unknown, unknown, VerifySafeWordsRequestBody>,
     res: Response,
   ) => {
-    const errors = validationResult(req as Request);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req as Request, res);
     try {
       const { userId, words } = req.body;
       await authService.verifySafeWords(userId, words);
@@ -119,10 +107,7 @@ class AuthController {
     req: Request<unknown, unknown, UpdatePassword>,
     res: Response,
   ) => {
-    const errors = validationResult(req as Request);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req as Request, res);
     try {
       const { id } = req.params as UpdatePassword;
       const { newPassword, repiteNewPassword } = req.body;
@@ -147,10 +132,7 @@ class AuthController {
   };
 
   static readonly updateProfile = async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(status.BAD_REQUEST).json({ errors: errors.array() });
-    }
+    validateData(req, res);
     const transaction = await sequelize.transaction();
     try {
       const { id } = req.params;
