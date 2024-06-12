@@ -41,9 +41,29 @@ class WalletService {
     );
   }
 
-  static async deleteWalletById(walletId: string): Promise<void> {}
+  static async deleteWalletById(walletId: string, userId: string): Promise<void> {
+    const countWallet = await Wallet.findAndCountAll({
+      where: {
+        userId,
+      },
+    });
+    if (countWallet.count < 2) {
+      throw new Error('You must have at least one wallet');
+    }
+    await Wallet.destroy({
+      where: {
+        id: walletId,
+      },
+    });
+  }
 
-  static async findWalletById(walletId: string): Promise<void> {}
+  static async getWalletById(walletId: string): Promise<WalletAttributes | null> {
+    return await Wallet.findOne({
+      where: {
+        id: walletId,
+      },
+    });
+  }
 }
 
 export { WalletService };
