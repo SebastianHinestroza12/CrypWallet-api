@@ -64,6 +64,15 @@ class AuthController {
       });
     } catch (e) {
       const error = <Error>e;
+      if (error.message === 'Incorrect password') {
+        return res.status(status.UNAUTHORIZED).json({ message: 'Incorrect password' });
+      }
+      if (error.message === 'locked account') {
+        return res
+          .status(status.FORBIDDEN)
+          .json({ message: 'Your account has been locked due to too many failed login attempts' });
+      }
+
       return res.status(status.NOT_FOUND).json({ message: error.message });
     }
   };

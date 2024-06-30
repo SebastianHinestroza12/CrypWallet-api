@@ -2,6 +2,7 @@ import { RegisterUserAttributes, UserAttributes } from '../types';
 import { IHashService, ITokenService } from '../interfaces/Authentication';
 import { User } from '../models/User';
 import { SafeWords } from '../models/SafeWords';
+import { FailedAttempts } from '../models/FailedAttempts';
 import { Transaction } from 'sequelize';
 import { EmailService } from './email.service';
 
@@ -42,16 +43,26 @@ class AuthService {
     if (!user) {
       throw new Error('User not found');
     }
+    if (!user.isActive) {
+      throw new Error('locked account');
+    }
+
     const isMatch = await this.hashService.comparePassword(password, user.password);
     if (!isMatch) {
+      // Registrar Intentos Fallidos
+      await this.recordFailedAttempt(user.id);
       throw new Error('Incorrect password');
     }
+
+    //Remover los intentos fallidos del usuario, si tiene alguno.
+    await this.removeFailedAttempts(user.id);
+
     return this.tokenService.generateToken(user);
   }
 
   async findUserByEmail(email: string): Promise<UserAttributes | null> {
     return User.findOne({
-      where: { email, isActive: true },
+      where: { email },
     });
   }
 
@@ -109,6 +120,38 @@ class AuthService {
     await user.update(userData, { transaction });
     return user;
   }
+
+  private recordFailedAttempt = async (userId: string) => {
+    try {
+      await FailedAttempts.create({ userId });
+      //Contar Intetos fallidos del usuario
+      const failedAttemptsCount = await FailedAttempts.count({ where: { userId } });
+
+      if (failedAttemptsCount >= 5) {
+        //Bloquear Usuario
+        await User.update({ isActive: false }, { where: { id: userId } });
+        throw new Error('locked account');
+      }
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(error.message);
+    }
+  };
+
+  private removeFailedAttempts = async (userId: string) => {
+    try {
+      //Contar Intetos fallidos del usuario
+      const failedAttemptsCount = await FailedAttempts.count({ where: { userId } });
+
+      if (failedAttemptsCount > 0) {
+        //Borrar Intetos fallidos del usuario
+        await FailedAttempts.destroy({ where: { userId } });
+      }
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(error.message);
+    }
+  };
 }
 
 export { AuthService };
