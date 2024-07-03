@@ -51,7 +51,9 @@ class AuthController {
     validateData(req, res);
     try {
       const { email, password } = req.body as UserAttributes;
-      const token = await authService.login(email, password);
+      const { token, user } = await authService.login(email, password);
+      const getWalletsUser = await WalletService.getWalletByUserId(user.id);
+
       res.cookie('token', token, {
         httpOnly: true,
         sameSite: 'strict',
@@ -61,6 +63,8 @@ class AuthController {
       return res.status(status.OK).json({
         login: true,
         message: 'User logged in successfully',
+        user,
+        wallets: getWalletsUser,
       });
     } catch (e) {
       const error = <Error>e;

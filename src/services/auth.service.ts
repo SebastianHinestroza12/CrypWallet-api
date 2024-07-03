@@ -37,7 +37,7 @@ class AuthService {
     return user;
   }
 
-  async login(email: string, password: string): Promise<string> {
+  async login(email: string, password: string) {
     const user = await this.findUserByEmail(email);
 
     if (!user) {
@@ -57,7 +57,10 @@ class AuthService {
     //Remover los intentos fallidos del usuario, si tiene alguno.
     await this.removeFailedAttempts(user.id);
 
-    return this.tokenService.generateToken(user);
+    return {
+      token: this.tokenService.generateToken(user),
+      user,
+    };
   }
 
   async findUserByEmail(email: string): Promise<UserAttributes | null> {
