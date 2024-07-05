@@ -7,6 +7,7 @@ export type UserAttributes = {
   email: string;
   password: string;
   isActive?: boolean;
+  currentWallet?: string;
   registrationDate?: number;
 };
 

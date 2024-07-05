@@ -1,4 +1,4 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application } from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -10,16 +10,13 @@ export const middlewares = (app: Application): void => {
   app.use(express.json());
   app.use(morgan('dev'));
   app.use(cookieParser());
-  app.use(cors());
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      credentials: true,
+    }),
+  );
   app.use(helmet());
-
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    next();
-  });
 
   const authMiddlewareInstance = new AuthMiddleware();
   app.use(authMiddlewareInstance.middleware.bind(authMiddlewareInstance));

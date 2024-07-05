@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
 import { WalletController } from '../controllers/wallet.controller';
+import { validateWalletId, paramsIdValidation } from '../validations/wallet.validate';
 
 const walletRoutes = Router();
 
-walletRoutes.post('/:id', WalletController.createWallet);
-walletRoutes.get('/user/:id', WalletController.getWalletByUserId);
-// walletRoutes.get('/:wallet_id', WalletController.getWalletByUserId);
-// walletRoutes.delete('/:wallet_id', WalletController.getWalletByUserId);
-walletRoutes.patch('/update/:id', WalletController.setWalletById);
+walletRoutes.post('/:id', paramsIdValidation(), WalletController.createWallet);
+walletRoutes.get('/:id', paramsIdValidation(), WalletController.getWalletById);
+walletRoutes.delete('/delete/:id', validateWalletId(), WalletController.deleteWalletById);
+walletRoutes.get('/user/:id', paramsIdValidation(), WalletController.getWalletByUserId);
+walletRoutes.patch('/update/:id', paramsIdValidation(), WalletController.setWalletById);
 
 export { walletRoutes };

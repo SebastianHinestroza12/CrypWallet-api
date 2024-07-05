@@ -54,6 +54,10 @@ export const User = sequelize.define<UserInstance>(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    currentWallet: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     registrationDate: {
       type: DataTypes.INTEGER,
       defaultValue: getCurrentUnixTimestamp,
