@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { RegisterUserAttributes, UserAttributes } from '../types';
 import { IHashService, ITokenService } from '../interfaces/Authentication';
 import { User } from '../models/User';
@@ -120,7 +122,10 @@ class AuthService {
     if (!user) {
       throw new Error('User does not exist');
     }
-    await user.update(userData, { transaction });
+    // Excluir el campo `email` de `userData`
+    const { email, ...dataToUpdate } = userData;
+
+    await user.update(dataToUpdate, { transaction });
     return user;
   }
 
