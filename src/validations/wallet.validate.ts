@@ -11,11 +11,11 @@ const validateUUID = (field: string, location: 'body' | 'param'): ValidationChai
     .withMessage('Must be in UUID format');
 };
 
-const validateUserId = (): ValidationChain => validateUUID('userId', 'body');
+const validateUserIdParam = (): ValidationChain => validateUUID('userId', 'param');
 
 const validateParamsId = (): ValidationChain => validateUUID('id', 'param');
 
-const validateWalletId = (): ValidationChain[] => [validateUserId(), validateParamsId()];
+const validateWalletId = (): ValidationChain[] => [validateUserIdParam(), validateParamsId()];
 
 const paramsIdValidation = (): ValidationChain[] => [validateParamsId()];
 export { validateWalletId, paramsIdValidation };

@@ -49,8 +49,7 @@ class WalletController {
 
   static readonly deleteWalletById = async (req: Request, res: Response, next: NextFunction) => {
     validateData(req, res);
-    const { id } = req.params;
-    const { userId } = req.body as WalletAttributes;
+    const { id, userId } = req.params;
     try {
       await WalletService.deleteWalletById(id, userId);
       return res.status(status.OK).json({
