@@ -18,6 +18,15 @@ class SafeWordsService {
 
     return safeWords;
   }
+
+  static async getSafeWordsById(userId: string): Promise<SafeWordsAttributes | null> {
+    return await SafeWords.findOne({
+      where: {
+        userId,
+      },
+      attributes: ['words'],
+    });
+  }
 }
 
 export { SafeWordsService };

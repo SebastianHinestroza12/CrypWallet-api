@@ -53,18 +53,20 @@ class AuthController {
       const { email, password } = req.body as UserAttributes;
       const { token, user } = await authService.login(email, password);
       const getWalletsUser = await WalletService.getWalletByUserId(user.id);
+      const safeWordByUser = await SafeWordsService.getSafeWordsById(user.id);
 
       res.cookie('token', token, {
         httpOnly: true,
         sameSite: 'strict',
         secure: true,
-        maxAge: 5 * 60 * 60 * 1000,
+        maxAge: 5 * 60 * 60 * 1000, // 5 hours
       });
       return res.status(status.OK).json({
         login: true,
         message: 'User logged in successfully',
         user,
         wallets: getWalletsUser,
+        safeWords: safeWordByUser?.words,
       });
     } catch (e) {
       const error = <Error>e;
