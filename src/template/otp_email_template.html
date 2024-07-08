@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autenticación de CrypWallet</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background-color: #333333;
+        padding: 10px;
+        text-align: center;
+        color: #ffffff;
+      }
+      .header img {
+        max-width: 170px;
+      }
+      .content {
+        padding: 20px;
+        color: #333333;
+      }
+      .content h1 {
+        color: #1e88e5;
+      }
+      .content p {
+        line-height: 1.6;
+      }
+      .otp-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .otp-digit {
+        width: 40px;
+        height: 40px;
+        margin: 0 5px;
+        border: 2px solid #1e88e5;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 24px;
+        color: #333333;
+      }
+      .footer {
+        background-color: #333333;
+        padding: 10px 20px;
+        color: #ffffff;
+        text-align: center;
+      }
+      .footer a {
+        color: #1e88e5;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <img
+          src="https://res.cloudinary.com/dafsjo7al/image/upload/v1720373518/mingcute_safe-shield-2-fill_jzu7et.png"
+          width="200"
+          height="180"
+          alt="CrypWallet Logo"
+        />
+      </div>
+      <div class="content">
+        <h1>Autenticación de CrypWallet</h1>
+        <p>Estimado/a {{name}},</p>
+        <p>
+          Para completar el proceso de autenticación, por favor utiliza el siguiente código OTP de 6
+          dígitos:
+        </p>
+        <div class="otp-container">
+          <p class="otp-digit">{{otp1}}</p>
+          <p class="otp-digit">{{otp2}}</p>
+          <p class="otp-digit">{{otp3}}</p>
+          <p class="otp-digit">{{otp4}}</p>
+          <p class="otp-digit">{{otp5}}</p>
+          <p class="otp-digit">{{otp6}}</p>
+        </div>
+        <p>
+          Si no solicitaste este código, por favor contacta a nuestro equipo de soporte
+          inmediatamente.
+        </p>
+        <p>Saludos cordiales,<br />El equipo de CrypWallet</p>
+      </div>
+      <div class="footer">
+        <p>© 2024 CrypWallet. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </body>
+</html>
