@@ -22,12 +22,7 @@ authRoute.post('/verify-safe-words', validateSafeWords(), AuthController.verifyS
 authRoute.post('/logout', AuthController.logout);
 authRoute.put('/profile/update/:id', nameLastNameValidation(), AuthController.updateProfile);
 authRoute.patch(
-  '/users/:id/update-password-with-safe-words',
-  validateChangePassword(),
-  AuthController.changePassword,
-);
-authRoute.patch(
-  '/users/:id/update-password-profile',
+  '/users/:id/update-password',
   validateChangePassword(),
   AuthController.changePassword,
 );
