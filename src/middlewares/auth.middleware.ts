@@ -15,6 +15,8 @@ class AuthMiddleware {
       /^\/api\/v1\/auth\/login$/,
       /^\/api\/v1\/auth\/register$/,
       /^\/api\/v1\/auth\/verify-email$/,
+      /^\/api\/v1\/auth\/generate-otp$/,
+      /^\/api\/v1\/auth\/[\w-]+\/verify-otp$/,
       /^\/api\/v1\/auth\/verify-safe-words$/,
       /^\/api\/v1\/cryptocurrencies$/,
       /^\/api\/v1\/transaction\/types$/,

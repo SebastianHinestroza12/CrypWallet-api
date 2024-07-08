@@ -36,7 +36,7 @@ class EmailService {
       const htmlContent = template.replace('{{name}}', name);
 
       const emailOptions: EmailOptions = {
-        from: 'crypwallet@yopmail.com',
+        from: 'infocrypwallet@gmail.com',
         to: email,
         subject: '¡Tu aventura en el mundo de las criptomonedas comienza ahora! 🎉',
         html: htmlContent,
@@ -45,6 +45,31 @@ class EmailService {
       await this.sendMail(emailOptions);
     } catch (error) {
       console.error('Error al enviar el correo de bienvenida:', error);
+      throw error;
+    }
+  }
+  async sendOTP(name: string, email: string, otp: string) {
+    try {
+      const templatePath = resolve(__dirname, '../template/otp_email_template.html');
+      const template = await fs.readFile(templatePath, 'utf-8');
+      // Reemplazar el nombre
+      let htmlContent = template.replace('{{name}}', name);
+
+      // Reemplazar cada dígito del OTP
+      otp.split('').forEach((digit, index) => {
+        htmlContent = htmlContent.replace(`{{otp${index + 1}}}`, digit);
+      });
+
+      const emailOptions: EmailOptions = {
+        from: 'infocrypwallet@gmail.com',
+        to: email,
+        subject: 'Tu código OTP',
+        html: htmlContent,
+      };
+
+      await this.sendMail(emailOptions);
+    } catch (error) {
+      console.error('Error al enviar el codigo OTP', error);
       throw error;
     }
   }
