@@ -86,7 +86,6 @@ const validateChangePassword = (): ValidationChain[] => {
       .isUUID()
       .withMessage('Must be in UUID format'),
     passwordValidation('newPassword'),
-    passwordValidation('repiteNewPassword'),
   ];
 };
 

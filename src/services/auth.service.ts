@@ -98,23 +98,21 @@ class AuthService {
     return true;
   }
 
-  async updateUserPassword(
-    id: string,
-    newPassword: string,
-    repiteNewPassword: string,
-  ): Promise<void> {
-    if (newPassword !== repiteNewPassword) {
-      throw new Error('Passwords do not match');
-    }
+  async updateUserPassword(id: string, newPassword: string): Promise<void> {
     const findUser = await this.findUserById(id);
     if (!findUser) {
       throw new Error('User does not exist');
     }
     const hashedPassword = await this.hashService.hashPassword(newPassword);
-    const [affectedCount] = await User.update({ password: hashedPassword }, { where: { id } });
+    const [affectedCount] = await User.update(
+      { password: hashedPassword, isActive: true },
+      { where: { id } },
+    );
     if (affectedCount === 0) {
       throw new Error('Failed to update password');
     }
+    // Remover los intentos fallidos del usuario, si tiene alguno.
+    await this.removeFailedAttempts(id);
   }
 
   private findUserById(userId: string): Promise<InstanceType<typeof User> | null> {
@@ -181,7 +179,7 @@ class AuthService {
       const otp = this.otpCode.generateOtpCode();
 
       // Guardar OTP en la base de datos
-      const newOTP = await OTP.create(
+      await OTP.create(
         {
           userId: user.id,
           otpCode: otp,
@@ -192,7 +190,9 @@ class AuthService {
       // Enviar OTP por correo electrónico
       await this.emailService.sendOTP(user.name, email, otp);
 
-      return newOTP;
+      return {
+        userId: user.id,
+      };
     } catch (e) {
       const error = <Error>e;
       throw new Error(error.message);

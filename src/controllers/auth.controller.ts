@@ -116,7 +116,7 @@ class AuthController {
       });
     } catch (e) {
       const error = <Error>e;
-      return res.status(status.NOT_FOUND).json({ message: error.message });
+      return res.status(status.BAD_REQUEST).json({ message: error.message });
     }
   };
 
@@ -127,8 +127,8 @@ class AuthController {
     validateData(req as Request, res);
     try {
       const { id } = req.params as UpdatePassword;
-      const { newPassword, repiteNewPassword } = req.body;
-      await authService.updateUserPassword(id, newPassword, repiteNewPassword);
+      const { newPassword } = req.body;
+      await authService.updateUserPassword(id, newPassword);
       return res.status(status.OK).json({
         message: 'Password updated successfully',
       });
@@ -169,9 +169,9 @@ class AuthController {
     const { email } = req.body as UserAttributes;
     const transaction = await sequelize.transaction();
     try {
-      await authService.generateAndSendOTP(email, transaction);
+      const { userId } = await authService.generateAndSendOTP(email, transaction);
       await transaction.commit();
-      return res.status(status.OK).json({ message: 'OTP sent successfully' });
+      return res.status(status.OK).json({ message: 'OTP sent successfully', userId });
     } catch (e) {
       const error = <Error>e;
       await transaction.rollback();
