@@ -7,5 +7,6 @@ import './TransactionType';
 import './TransactionStatus';
 import './Cryptocurrency';
 import './FailedAttempts';
+import './Otp';
 
 export { sequelize };

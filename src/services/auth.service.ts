@@ -1,22 +1,30 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { RegisterUserAttributes, UserAttributes } from '../types';
-import { IHashService, ITokenService } from '../interfaces/Authentication';
+import { IHashService, ITokenService, IGenerateOtpCode } from '../interfaces/Authentication';
 import { User } from '../models/User';
 import { SafeWords } from '../models/SafeWords';
 import { FailedAttempts } from '../models/FailedAttempts';
 import { Transaction } from 'sequelize';
 import { EmailService } from './email.service';
+import { OTP } from '../models/Otp';
 
 class AuthService {
   private hashService: IHashService;
   private tokenService: ITokenService;
   private emailService: EmailService;
+  private otpCode: IGenerateOtpCode;
 
-  constructor(hashService: IHashService, tokenService: ITokenService, emailService: EmailService) {
+  constructor(
+    hashService: IHashService,
+    tokenService: ITokenService,
+    emailService: EmailService,
+    otpCode: IGenerateOtpCode,
+  ) {
     this.hashService = hashService;
     this.tokenService = tokenService;
     this.emailService = emailService;
+    this.otpCode = otpCode;
   }
 
   async register(
@@ -160,6 +168,62 @@ class AuthService {
       throw new Error(error.message);
     }
   };
+
+  async generateAndSendOTP(email: string, transaction: Transaction) {
+    try {
+      //Verificar la existencia del usuario
+      const user = await this.findUserByEmail(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      //Generamos el codido de 6 digitos
+      const otp = this.otpCode.generateOtpCode();
+
+      // Guardar OTP en la base de datos
+      const newOTP = await OTP.create(
+        {
+          userId: user.id,
+          otpCode: otp,
+        },
+        { transaction },
+      );
+
+      // Enviar OTP por correo electrónico
+      await this.emailService.sendOTP(user.name, email, otp);
+
+      return newOTP;
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(error.message);
+    }
+  }
+
+  async verifyOTP(userId: string, otp: string): Promise<boolean> {
+    try {
+      // Buscar el ultimo OTP del usuario en la base de datos
+      const otpRecord = await OTP.findOne({
+        where: { userId },
+        order: [['id', 'DESC']],
+      });
+
+      if (!otpRecord) {
+        throw new Error('OTP not found');
+      }
+
+      // Verificar si el OTP es correcto
+      if (otpRecord.get('otpCode') === otp) {
+        // Borrar todos OTP del usuario de la base de datos
+        await OTP.destroy({ where: { userId } });
+        return true;
+      } else {
+        throw new Error('Invalid OTP');
+      }
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(error.message);
+    }
+  }
 }
 
 export { AuthService };

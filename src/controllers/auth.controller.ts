@@ -3,17 +3,19 @@ import { Request, Response, NextFunction } from 'express';
 import { UserAttributes, RegisterUserAttributes } from '../types';
 import { SafeWordsService } from '../services/safeWord.service';
 import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
+import { VerifyOTPPayload } from '../interfaces/Authentication';
 import { WalletService } from '../services/wallet.service';
-import { BcryptHashService, JwtTokenService } from '../utils';
+import { BcryptHashService, JwtTokenService, GenerateOTP } from '../utils';
 import { sequelize } from '../database';
 import { EmailService } from '../services/email.service';
-import status from 'http-status';
 import { validateData } from '../helper/validateData';
+import status from 'http-status';
 
 const hashService = new BcryptHashService();
 const tokenService = new JwtTokenService();
 const emailService = new EmailService();
-const authService = new AuthService(hashService, tokenService, emailService);
+const generateOtp = new GenerateOTP();
+const authService = new AuthService(hashService, tokenService, emailService, generateOtp);
 
 class AuthController {
   static readonly register = async (req: Request, res: Response, next: NextFunction) => {
@@ -157,6 +159,40 @@ class AuthController {
       return res.status(status.OK).json({ message: 'Profile updated successfully', user: profile });
     } catch (e) {
       await transaction.rollback();
+      const error = <Error>e;
+      return res.status(status.BAD_REQUEST).json({ message: error.message });
+    }
+  };
+
+  static readonly generateOTP = async (req: Request, res: Response, next: NextFunction) => {
+    validateData(req, res);
+    const { email } = req.body as UserAttributes;
+    const transaction = await sequelize.transaction();
+    try {
+      await authService.generateAndSendOTP(email, transaction);
+      await transaction.commit();
+      return res.status(status.OK).json({ message: 'OTP sent successfully' });
+    } catch (e) {
+      const error = <Error>e;
+      await transaction.rollback();
+      if (error.message === 'User not found') {
+        return res.status(status.NOT_FOUND).json({ message: 'User not found' });
+      }
+      next(e);
+    }
+  };
+
+  static readonly verifyOTP = async (req: Request, res: Response) => {
+    validateData(req, res);
+    const { id } = req.params;
+    const { otp } = req.body as VerifyOTPPayload;
+
+    try {
+      await authService.verifyOTP(id, otp);
+      return res.status(status.OK).json({
+        message: 'OTP verified successfully',
+      });
+    } catch (e) {
       const error = <Error>e;
       return res.status(status.BAD_REQUEST).json({ message: error.message });
     }
