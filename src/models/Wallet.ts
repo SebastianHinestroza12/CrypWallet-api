@@ -57,7 +57,7 @@ export const Wallet = sequelize.define<WalletInstance>(
     },
     cryptoCurrency: {
       type: DataTypes.JSON,
-      defaultValue: { bitcoin: 0.459, ethereum: 3.0023, binancecoin: 874300.023 },
+      defaultValue: { BTC: 0.459, ETH: 3.0023, BNB: 874300.023 },
     },
   },
   {
