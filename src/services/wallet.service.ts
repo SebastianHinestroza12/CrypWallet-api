@@ -1,7 +1,7 @@
 import { WalletAttributes } from '../types';
 import { Transaction } from 'sequelize';
 import { Wallet } from '../models/Wallet';
-import { WalletAddressGenerator } from '../utils';
+import { WalletGenerator } from '../utils';
 
 class WalletService {
   static async createWallet(
@@ -12,8 +12,9 @@ class WalletService {
     const wallet = await Wallet.create(
       {
         name: nameWallet,
-        address: WalletAddressGenerator.generate(),
         userId,
+        address: WalletGenerator.generateAddress(),
+        cryptoCurrency: WalletGenerator.generateRandomCryptoValues(),
       },
       { transaction },
     );
