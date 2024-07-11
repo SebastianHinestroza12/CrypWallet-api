@@ -41,18 +41,6 @@ export const Wallet = sequelize.define<WalletInstance>('wallet', {
       isAlphanumeric: true,
     },
   },
-  manageCrypto: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: [
-      'bitcoin',
-      'ethereum',
-      'tether',
-      'binancecoin',
-      'solana',
-      'staked-ether',
-      'usd-coin',
-    ],
-  },
   cryptoCurrency: {
     type: DataTypes.JSON,
     allowNull: false,

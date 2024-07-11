@@ -5,7 +5,7 @@ export class WalletGenerator {
     return wallet.getAddressString();
   }
   static generateRandomCryptoValues(): Record<string, number> {
-    const cryptos: string[] = ['BTC', 'ETH', 'BNB'];
+    const cryptos: string[] = ['BTC', 'ETH', 'BNB', 'BCH', 'LTC'];
     const cryptoValues: Record<string, number> = {};
 
     cryptos.forEach((crypto) => {
