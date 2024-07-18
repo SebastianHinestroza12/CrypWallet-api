@@ -6,6 +6,6 @@ const transactionRoutes = Router();
 
 transactionRoutes.post('/');
 transactionRoutes.post('/types', TransactionController.createTransactionType);
-transactionRoutes.post('/status', TransactionController.createTransactionStatus);
+transactionRoutes.post('/send-crypto', TransactionController.createSendCryptoTransaction);
 
 export { transactionRoutes };

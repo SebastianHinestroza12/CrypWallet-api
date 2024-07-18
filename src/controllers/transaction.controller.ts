@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { TransactionService } from '../services/transaction.service';
+import { SendTransactionIProps } from '../types/transaction';
+import { sequelize } from '../database';
 import status from 'http-status';
 
 class TransactionController {
@@ -19,18 +21,28 @@ class TransactionController {
     }
   };
 
-  static readonly createTransactionStatus = async (
+  static readonly createSendCryptoTransaction = async (
     req: Request,
     res: Response,
     next: NextFunction,
-  ) => {
+  ): Promise<Response | void> => {
+    const transaction = await sequelize.transaction();
     try {
-      const transactionStatus = await TransactionService.createTransactionStatus();
+      const data = req.body as SendTransactionIProps;
+
+      const transferCripto = await TransactionService.createSendCryptoTransaction(
+        data,
+        transaction,
+      );
+
+      await transaction.commit();
+
       return res.status(status.CREATED).json({
-        message: 'Transaction status created successfully',
-        transactionStatus,
+        message: 'Transaction created successfully',
+        dataTransfer: transferCripto,
       });
     } catch (error) {
+      await transaction.rollback();
       next(error);
     }
   };

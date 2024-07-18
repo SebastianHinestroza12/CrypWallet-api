@@ -1,7 +1,9 @@
 import { WalletAttributes } from '../types';
-import { Transaction } from 'sequelize';
+import { Transaction, QueryTypes } from 'sequelize';
 import { Wallet } from '../models/Wallet';
 import { WalletGenerator } from '../utils';
+import { sequelize } from '../database';
+import { DestinationWallet } from '../interfaces/Wallet';
 
 class WalletService {
   static async createWallet(
@@ -64,6 +66,46 @@ class WalletService {
         id: walletId,
       },
     });
+  }
+
+  static async getWalletByAddress(address: string): Promise<WalletAttributes | null> {
+    return await Wallet.findOne({
+      where: {
+        address,
+      },
+    });
+  }
+
+  static async getWalletByField(
+    field: 'id' | 'address',
+    value: string,
+  ): Promise<{ wallet: WalletAttributes; destination: DestinationWallet[] } | null> {
+    const findWallet = await Wallet.findOne({
+      where: {
+        [field]: value,
+      },
+    });
+
+    if (findWallet) {
+      const query = `
+      SELECT CONCAT(u."name", ' ', u."lastName") AS name, w.id as walletId 
+      FROM public.wallets AS w
+      INNER JOIN public.users AS u ON w."userId" = u.id
+      WHERE w.address = :address
+    `;
+
+      const destinationWallet: DestinationWallet[] = await sequelize.query(query, {
+        type: QueryTypes.SELECT,
+        replacements: { address: value },
+      });
+
+      return {
+        wallet: findWallet,
+        destination: destinationWallet,
+      };
+    }
+
+    return null;
   }
 }
 
