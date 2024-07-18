@@ -4,8 +4,6 @@ import {
   UserAttributes,
   CryptocurrencyAttributes,
   CryptocurrencyCreationAttributes,
-  TransactionStatusAttributes,
-  TransactionStatusCreationAttributes,
   TransactionTypeAttributes,
   TransactionTypeCreationAttributes,
   SafeWordsAttributes,
@@ -17,10 +15,6 @@ import {
 export interface UserInstance
   extends Model<UserAttributes, UserCreationAttributes>,
     UserAttributes {}
-
-export interface TransactionStatusInstance
-  extends Model<TransactionStatusAttributes, TransactionStatusCreationAttributes>,
-    TransactionStatusAttributes {}
 
 export interface CryptocurrencyInstance
   extends Model<CryptocurrencyAttributes, CryptocurrencyCreationAttributes>,

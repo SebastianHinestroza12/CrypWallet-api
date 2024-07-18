@@ -1,14 +1,23 @@
 import { Optional } from 'sequelize';
 
-export type TransactionStatusAttributes = {
-  id: number;
-  name: 'pending' | 'completed' | 'failed';
-};
-
 export type TransactionTypeAttributes = {
   id: number;
-  name: 'Transfer' | 'Purchase' | 'Sale' | 'Deposit' | 'Withdrawal' | 'Payment';
+  name: 'Send' | 'Receive' | 'Buy' | 'Sell' | 'Swap' | 'None';
 };
 
-export type TransactionStatusCreationAttributes = Optional<TransactionStatusAttributes, 'id'>;
+export type SendTransactionIProps = {
+  amount: number;
+  cryptocurrencyId: string;
+  destinyWalletId: string;
+  originWalletId: string;
+  description: string;
+};
+
+export type UpdateBalanceIProps = {
+  type: 'increment' | 'decrement';
+  amount: number;
+  walletId: string;
+  cryptoCurrency: string;
+};
+
 export type TransactionTypeCreationAttributes = Optional<TransactionTypeAttributes, 'id'>;
