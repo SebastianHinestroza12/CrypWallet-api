@@ -11,11 +11,11 @@ export const TransactionType = sequelize.define<TransactionTypeInstance>(
       autoIncrement: true,
     },
     name: {
-      type: DataTypes.ENUM('Transfer', 'Purchase', 'Sale', 'Deposit', 'Withdrawal', 'Payment'),
+      type: DataTypes.ENUM('Send', 'Receive', 'Buy', 'Sell', 'Swap', 'None'),
       allowNull: false,
       validate: {
         notEmpty: true,
-        isIn: [['Transfer', 'Purchase', 'Sale', 'Deposit', 'Withdrawal', 'Payment']],
+        isIn: [['Send', 'Receive', 'Buy', 'Sell', 'Swap']],
       },
     },
   },

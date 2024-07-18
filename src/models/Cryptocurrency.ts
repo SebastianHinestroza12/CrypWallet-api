@@ -20,13 +20,6 @@ export const Cryptocurrency = sequelize.define<CryptocurrencyInstance>(
         notEmpty: true,
       },
     },
-    symbol: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
   },
   {
     timestamps: false,
