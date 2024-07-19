@@ -3,6 +3,7 @@ import { TransactionService } from '../services/transaction.service';
 import { SendTransactionIProps } from '../types/transaction';
 import { sequelize } from '../database';
 import status from 'http-status';
+import { validateData } from '../helper/validateData';
 
 class TransactionController {
   static readonly createTransactionType = async (
@@ -26,6 +27,7 @@ class TransactionController {
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> => {
+    validateData(req, res);
     const transaction = await sequelize.transaction();
     try {
       const data = req.body as SendTransactionIProps;
