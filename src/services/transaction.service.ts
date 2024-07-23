@@ -1,8 +1,14 @@
+import Decimal from 'decimal.js';
 import { TransactionType } from '../models/TransactionType';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
 import { Transaction as SequelizeTransaction } from 'sequelize';
-import { TransactionTypeAttributes, SendTransactionIProps, UpdateBalanceIProps } from '../types';
+import {
+  TransactionTypeAttributes,
+  SendTransactionIProps,
+  UpdateBalanceIProps,
+  PaymentDetailIProps,
+} from '../types';
 
 class TransactionService {
   static async createTransactionType(): Promise<TransactionTypeAttributes[]> {
@@ -45,19 +51,27 @@ class TransactionService {
         throw new Error(`Cryptocurrency ${cryptoCurrency} not found in wallet`);
       }
 
+      const parsedAmount = new Decimal(amount as unknown as string);
+      const currentCryptoAmount = new Decimal(currentCrypto[cryptoCurrency]);
+
       // Actualizar el valor de la criptomoneda
+      let newCryptoAmount: Decimal;
+
       if (type === 'increment') {
-        currentCrypto[cryptoCurrency] += amount;
+        newCryptoAmount = currentCryptoAmount.plus(parsedAmount);
       } else if (type === 'decrement') {
-        currentCrypto[cryptoCurrency] -= amount;
+        newCryptoAmount = currentCryptoAmount.minus(parsedAmount);
 
         // Verificar que no se vuelva negativo
-        if (currentCrypto[cryptoCurrency] < 0) {
+        if (newCryptoAmount.lessThan(0)) {
           throw new Error(`Insufficient ${cryptoCurrency} balance in wallet`);
         }
       } else {
         throw new Error('Invalid transaction type');
       }
+
+      // Actualizar el valor de la criptomoneda en el objeto
+      currentCrypto[cryptoCurrency] = newCryptoAmount.toNumber();
 
       await Wallet.update(
         { cryptoCurrency: currentCrypto },
@@ -103,6 +117,59 @@ class TransactionService {
       return transfer;
     } catch (error) {
       throw new Error('Failed to send crypto transaction');
+    }
+  }
+
+  static async cryptoPurchase(data: PaymentDetailIProps, transaction: SequelizeTransaction) {
+    const { amount, cryptoID, idPayment, originWalletId, paymentGateway } = data;
+    try {
+      const wallet = await Wallet.findByPk(originWalletId);
+
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      const currentCrypto = wallet.cryptoCurrency;
+
+      if (!currentCrypto) {
+        throw new Error('No crypto currency found in wallet');
+      }
+
+      const parsedAmount = new Decimal(amount as unknown as string);
+
+      if (parsedAmount.isNaN()) {
+        throw new Error(`Invalid amount value: ${amount}`);
+      }
+
+      if (cryptoID in currentCrypto) {
+        currentCrypto[cryptoID] = new Decimal(currentCrypto[cryptoID])
+          .plus(parsedAmount)
+          .toNumber();
+      } else {
+        currentCrypto[cryptoID] = parsedAmount.toNumber();
+      }
+
+      await Wallet.update(
+        { cryptoCurrency: currentCrypto },
+        { where: { id: originWalletId }, transaction },
+      );
+
+      const buyCrypto = await Transaction.create(
+        {
+          idPayment,
+          originWalletId,
+          amount: parsedAmount.toNumber(),
+          cryptocurrencyId: cryptoID,
+          paymentGateway,
+          typeId: 3,
+        },
+        { transaction },
+      );
+
+      return buyCrypto;
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(`Failed to perform crypto purchase ${error.message}`);
     }
   }
 }

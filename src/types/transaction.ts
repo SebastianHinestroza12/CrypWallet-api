@@ -20,4 +20,12 @@ export type UpdateBalanceIProps = {
   cryptoCurrency: string;
 };
 
+export type PaymentDetailIProps = {
+  cryptoID: string;
+  amount: number;
+  idPayment: string;
+  paymentGateway: string;
+  originWalletId: string;
+};
+
 export type TransactionTypeCreationAttributes = Optional<TransactionTypeAttributes, 'id'>;

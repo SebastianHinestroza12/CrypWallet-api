@@ -17,6 +17,12 @@ export class PaymentController {
       req.body as RequestPaymentStripeIprops;
     const amountInCents = Math.round(unit_amount * 100);
 
+    if (unit_amount < 1) {
+      return res.status(status.BAD_REQUEST).json({
+        message: 'Unit amount must be greater than or equal to 1',
+      });
+    }
+
     const sessionData: SessionData = {
       line_items: [
         {
