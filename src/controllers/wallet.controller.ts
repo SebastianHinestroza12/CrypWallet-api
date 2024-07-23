@@ -49,8 +49,7 @@ class WalletController {
 
   static readonly deleteWalletById = async (req: Request, res: Response, next: NextFunction) => {
     validateData(req, res);
-    const { id } = req.params;
-    const { userId } = req.body as WalletAttributes;
+    const { id, userId } = req.params;
     try {
       await WalletService.deleteWalletById(id, userId);
       return res.status(status.OK).json({
@@ -66,8 +65,26 @@ class WalletController {
     validateData(req, res);
     const { id } = req.params;
     try {
-      const wallet = await WalletService.getWalletById(id);
-      return res.status(status.OK).json({ wallet });
+      const result = await WalletService.getWalletByField('id', id);
+      if (result && result.wallet) {
+        return res.status(status.OK).json({ wallet: result.wallet });
+      } else {
+        return res.status(status.NOT_FOUND).json({ message: 'Wallet not found' });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static readonly getWalletByAddress = async (req: Request, res: Response, next: NextFunction) => {
+    const { walletAddress } = req.params;
+    try {
+      const result = await WalletService.getWalletByField('address', walletAddress);
+      if (result && result.destination) {
+        return res.status(status.OK).json({ destination: result.destination });
+      } else {
+        return res.status(status.NOT_FOUND).json({ message: 'Wallet not found' });
+      }
     } catch (error) {
       next(error);
     }

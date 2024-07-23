@@ -12,4 +12,12 @@ interface ITokenService {
   verifyToken(token: string): JwtPayload | string | boolean;
 }
 
-export { IHashService, ITokenService };
+interface IGenerateOtpCode {
+  generateOtpCode(): string;
+}
+
+interface VerifyOTPPayload {
+  otp: string;
+}
+
+export { IHashService, ITokenService, IGenerateOtpCode, VerifyOTPPayload };

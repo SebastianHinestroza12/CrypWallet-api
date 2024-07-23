@@ -4,7 +4,6 @@ export type WalletAttributes = {
   id: string;
   name: string;
   address: string;
-  manageCrypto?: string[];
   cryptoCurrency?: { [key: string]: number };
   userId: string;
 };

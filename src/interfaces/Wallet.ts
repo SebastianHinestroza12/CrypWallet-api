@@ -3,4 +3,9 @@ interface IWalletService {
   generate(): string;
 }
 
-export { IWalletService };
+interface DestinationWallet {
+  name: string;
+  walletId: string;
+}
+
+export { IWalletService, DestinationWallet };

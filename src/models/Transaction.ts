@@ -3,8 +3,7 @@ import { sequelize } from '../database';
 import { Wallet } from './Wallet';
 import { Cryptocurrency } from './Cryptocurrency';
 import { TransactionType } from './TransactionType';
-import { TransactionStatus } from './TransactionStatus';
-import { getCurrentUnixTimestamp } from '../utils/date';
+import { getCurrentUnixTimestamp, generateAleatorNumber } from '../utils/date';
 
 export const Transaction = sequelize.define(
   'transaction',
@@ -14,17 +13,25 @@ export const Transaction = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    receiverWalletId: {
+
+    idPayment: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+    destinyWalletId: {
       type: DataTypes.UUID,
       allowNull: true,
       references: {
         model: Wallet,
         key: 'id',
       },
+      defaultValue: null,
     },
-    walletId: {
+    originWalletId: {
       type: DataTypes.UUID,
       allowNull: false,
+      defaultValue: null,
       references: {
         model: Wallet,
         key: 'id',
@@ -69,17 +76,19 @@ export const Transaction = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: getCurrentUnixTimestamp,
     },
-    statusId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: TransactionStatus,
-        key: 'id',
-      },
-      validate: {
-        notEmpty: true,
-        isInt: true,
-      },
+    referenceNumber: {
+      type: DataTypes.STRING,
+      defaultValue: generateAleatorNumber,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+    },
+    paymentGateway: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {
@@ -87,11 +96,11 @@ export const Transaction = sequelize.define(
   },
 );
 
-Wallet.hasMany(Transaction, { foreignKey: 'receiverWalletId' });
-Transaction.belongsTo(Wallet, { foreignKey: 'receiverWalletId' });
+Wallet.hasMany(Transaction, { foreignKey: 'destinyWalletId' });
+Transaction.belongsTo(Wallet, { foreignKey: 'destinyWalletId' });
 
-Wallet.hasMany(Transaction, { foreignKey: 'walletId' });
-Transaction.belongsTo(Wallet, { foreignKey: 'walletId' });
+Wallet.hasMany(Transaction, { foreignKey: 'originWalletId' });
+Transaction.belongsTo(Wallet, { foreignKey: 'originWalletId' });
 
 Cryptocurrency.hasMany(Transaction, { foreignKey: 'cryptocurrencyId' });
 Transaction.belongsTo(Cryptocurrency, { foreignKey: 'cryptocurrencyId' });
@@ -99,5 +108,3 @@ Transaction.belongsTo(Cryptocurrency, { foreignKey: 'cryptocurrencyId' });
 TransactionType.hasMany(Transaction, { foreignKey: 'typeId' });
 Transaction.belongsTo(TransactionType, { foreignKey: 'typeId' });
 
-TransactionStatus.hasMany(Transaction, { foreignKey: 'statusId' });
-Transaction.belongsTo(TransactionStatus, { foreignKey: 'statusId' });

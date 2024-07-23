@@ -86,14 +86,33 @@ const validateChangePassword = (): ValidationChain[] => {
       .isUUID()
       .withMessage('Must be in UUID format'),
     passwordValidation('newPassword'),
-    passwordValidation('repiteNewPassword'),
   ];
 };
 
+const verifyOTP = (): ValidationChain[] => {
+  return [
+    param('id')
+      .trim()
+      .notEmpty()
+      .withMessage('id is required')
+      .isString()
+      .isUUID()
+      .withMessage('Must be in UUID format'),
+    body('otp')
+      .trim()
+      .notEmpty()
+      .withMessage('OTP is required')
+      .isString()
+      .withMessage('OTP must be a string')
+      .isLength({ min: 6, max: 6 })
+      .withMessage('OTP must be exactly 6 characters long'),
+  ];
+};
 export {
   validateUserRegistration,
   validateUserLogin,
   validateEmail,
   validateChangePassword,
   nameLastNameValidation,
+  verifyOTP,
 };

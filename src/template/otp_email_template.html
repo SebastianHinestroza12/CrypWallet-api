@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bienvenido a CrypWallet</title>
+    <title>Autenticación de CrypWallet</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -38,6 +38,21 @@
       .content p {
         line-height: 1.6;
       }
+      .otp-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .otp-digit {
+        width: 40px;
+        height: 40px;
+        margin: 0 5px;
+        border: 2px solid #1e88e5;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 24px;
+        color: #333333;
+      }
       .footer {
         background-color: #333333;
         padding: 10px 20px;
@@ -64,22 +79,24 @@
         />
       </div>
       <div class="content">
-        <h1>¡Bienvenido a CrypWallet!</h1>
+        <h1>Autenticación de CrypWallet</h1>
         <p>Estimado/a {{name}},</p>
         <p>
-          Nos complace darte la bienvenida a CrypWallet, tu nueva plataforma de confianza para
-          gestionar tus criptomonedas de manera segura y eficiente.
+          Para completar el proceso de autenticación, por favor utiliza el siguiente código OTP de 6
+          dígitos:
         </p>
+        <div class="otp-container">
+          <p class="otp-digit">{{otp1}}</p>
+          <p class="otp-digit">{{otp2}}</p>
+          <p class="otp-digit">{{otp3}}</p>
+          <p class="otp-digit">{{otp4}}</p>
+          <p class="otp-digit">{{otp5}}</p>
+          <p class="otp-digit">{{otp6}}</p>
+        </div>
         <p>
-          Estamos encantados de que te unas a nuestra comunidad y esperamos que disfrutes de todos
-          los beneficios que ofrecemos. Aquí en CrypWallet, nos esforzamos por proporcionar la mejor
-          experiencia posible para nuestros usuarios.
+          Si no solicitaste este código, por favor contacta a nuestro equipo de soporte
+          inmediatamente.
         </p>
-        <p>
-          Si tienes alguna pregunta o necesitas ayuda, no dudes en ponerte en contacto con nosotros.
-          Estamos aquí para ayudarte en cada paso del camino.
-        </p>
-        <p>¡Gracias por elegir CrypWallet!</p>
         <p>Saludos cordiales,<br />El equipo de CrypWallet</p>
       </div>
       <div class="footer">

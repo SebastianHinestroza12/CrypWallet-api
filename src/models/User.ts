@@ -58,6 +58,11 @@ export const User = sequelize.define<UserInstance>(
       type: DataTypes.UUID,
       allowNull: true,
     },
+    avatarUrl: {
+      type: DataTypes.STRING,
+      defaultValue:
+        'https://res.cloudinary.com/dwbytrdzg/image/upload/v1720594871/default-avatar_pnnlf2.png',
+    },
     registrationDate: {
       type: DataTypes.INTEGER,
       defaultValue: getCurrentUnixTimestamp,
