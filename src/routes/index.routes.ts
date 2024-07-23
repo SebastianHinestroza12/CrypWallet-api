@@ -4,6 +4,7 @@ import { crypoRouter } from './crypto.routes';
 import { transactionRoutes } from './transaction.routes';
 import { notFoundHandler } from '../middlewares/errorHandler';
 import { walletRoutes } from './wallet.routes';
+import { paymentRoutes } from './payment.routes';
 
 export const routes = (app: Application): void => {
   // Authentication routes
@@ -17,6 +18,9 @@ export const routes = (app: Application): void => {
 
   //Wallet routes
   app.use('/api/v1/wallet', walletRoutes);
+
+  //Payment routes
+  app.use('/api/v1/payment', paymentRoutes);
 
   //Not found route
   app.use(notFoundHandler);

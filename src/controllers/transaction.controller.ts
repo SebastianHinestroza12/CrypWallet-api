@@ -5,7 +5,7 @@ import { sequelize } from '../database';
 import status from 'http-status';
 import { validateData } from '../helper/validateData';
 
-class TransactionController {
+export class TransactionController {
   static readonly createTransactionType = async (
     req: Request,
     res: Response,
@@ -50,4 +50,3 @@ class TransactionController {
   };
 }
 
-export { TransactionController };
