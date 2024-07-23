@@ -13,6 +13,12 @@ export const Transaction = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+
+    idPayment: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
     destinyWalletId: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -20,10 +26,12 @@ export const Transaction = sequelize.define(
         model: Wallet,
         key: 'id',
       },
+      defaultValue: null,
     },
     originWalletId: {
       type: DataTypes.UUID,
       allowNull: false,
+      defaultValue: null,
       references: {
         model: Wallet,
         key: 'id',
@@ -75,6 +83,12 @@ export const Transaction = sequelize.define(
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+      defaultValue: null,
+    },
+    paymentGateway: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {
