@@ -6,3 +6,4 @@ export * from './logger';
 export * from './generate.wallet.address';
 export * from './axios';
 export * from './generateOtpCode';
+export * from './env';
