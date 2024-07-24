@@ -29,4 +29,5 @@ export interface RequestPaymentStripeIprops {
   unit_amount: number;
   urlImage: string;
   customer_email: string;
+  paymentMethod: string;
 }
