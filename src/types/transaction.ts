@@ -28,4 +28,21 @@ export type PaymentDetailIProps = {
   originWalletId: string;
 };
 
+
+export type TransactionUserIProps = {
+  id: number;
+  idPayment: string | null;
+  destination: string | null;
+  origin: string;
+  amount: number;
+  symbol: string;
+  name_cryptocurrency: string;
+  type_transaction: string;
+  referenceNumber: string;
+  paymentGateway: string | null;
+  user_origin: string;
+  formatted_date: string;
+  user_destination: string | null;
+};
+
 export type TransactionTypeCreationAttributes = Optional<TransactionTypeAttributes, 'id'>;

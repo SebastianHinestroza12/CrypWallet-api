@@ -2,12 +2,14 @@ import Decimal from 'decimal.js';
 import { TransactionType } from '../models/TransactionType';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
-import { Transaction as SequelizeTransaction } from 'sequelize';
+import { Transaction as SequelizeTransaction, QueryTypes } from 'sequelize';
+import { sequelize } from '../database';
 import {
   TransactionTypeAttributes,
   SendTransactionIProps,
   UpdateBalanceIProps,
   PaymentDetailIProps,
+  TransactionUserIProps,
 } from '../types';
 
 class TransactionService {
@@ -170,6 +172,63 @@ class TransactionService {
     } catch (e) {
       const error = <Error>e;
       throw new Error(`Failed to perform crypto purchase ${error.message}`);
+    }
+  }
+  static async getAllTransactionByUser(userId: string): Promise<TransactionUserIProps[]> {
+    try {
+      const query = `
+      select
+      	t.id ,
+      	t."idPayment",
+      	w1."address" as destination,
+      	w2."address" as origin,
+      	t.amount,
+      	c.id as symbol,
+      	c."name" as name_cryptocurrency,
+      	tt."name" as type_transaction,
+      	t."referenceNumber",
+      	t."paymentGateway",
+      	concat(u2."name",
+      	' ',
+      	u2."lastName") as user_origin,
+      	TO_CHAR(TO_TIMESTAMP(t."date"),
+      	'DD-MM-YYYY HH24:MI') as formatted_date,
+      	case
+      		when t."destinyWalletId" is not null
+              then concat(u."name",
+      		' ',
+      		u."lastName")
+      		else null
+      	end as user_destination
+      from
+      	public.transactions t
+      left join public.wallets w1 on
+      	w1.id = t."destinyWalletId"
+      join public.wallets w2 on
+      	w2.id = t."originWalletId"
+      join public.cryptocurrencies c on
+      	c.id = t."cryptocurrencyId"
+      join public.transaction_types tt on
+      	tt.id = t."typeId"
+      left join public.users u on
+      	u.id = w1."userId"
+      join public.users u2 on
+      	u2.id = w2."userId"
+      where
+      	w1."userId" in (:userId)
+      	or w2."userId" in (:userId);
+    `;
+
+      const allTransactions: TransactionUserIProps[] = await sequelize.query(query, {
+        type: QueryTypes.SELECT,
+        replacements: { userId },
+      });
+
+      return allTransactions;
+    } catch (e) {
+      const error = <Error>e;
+      console.error('Error getting transactions by user:', error.message);
+      throw new Error('Failed to get transactions');
     }
   }
 }

@@ -8,6 +8,7 @@ import { WalletService } from '../services/wallet.service';
 import { BcryptHashService, JwtTokenService, GenerateOTP } from '../utils';
 import { sequelize } from '../database';
 import { EmailService } from '../services/email.service';
+import { TransactionService } from '../services/transaction.service';
 import { validateData } from '../helper/validateData';
 import status from 'http-status';
 
@@ -56,6 +57,7 @@ class AuthController {
       const { token, user } = await authService.login(email, password);
       const getWalletsUser = await WalletService.getWalletByUserId(user.id);
       const safeWordByUser = await SafeWordsService.getSafeWordsById(user.id);
+      const getAllTransactions = await TransactionService.getAllTransactionByUser(user.id);
 
       res.cookie('token', token, {
         httpOnly: true,
@@ -69,6 +71,7 @@ class AuthController {
         user,
         wallets: getWalletsUser,
         safeWords: safeWordByUser?.words,
+        transactions: getAllTransactions,
       });
     } catch (e) {
       const error = <Error>e;
