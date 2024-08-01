@@ -10,19 +10,13 @@ import {
   UpdateBalanceIProps,
   PaymentDetailIProps,
   TransactionUserIProps,
+  ExchangeDataIProps,
 } from '../types';
 
 class TransactionService {
   static async createTransactionType(): Promise<TransactionTypeAttributes[]> {
     const transactionType = await TransactionType.bulkCreate(
-      [
-        { name: 'Send' },
-        { name: 'Receive' },
-        { name: 'Buy' },
-        { name: 'Sell' },
-        { name: 'Swap' },
-        { name: 'None' },
-      ],
+      [{ name: 'Send' }, { name: 'Receive' }, { name: 'Buy' }, { name: 'Swap' }, { name: 'None' }],
       {
         updateOnDuplicate: ['name'],
       },
@@ -174,6 +168,7 @@ class TransactionService {
       throw new Error(`Failed to perform crypto purchase ${error.message}`);
     }
   }
+
   static async getAllTransactionByUser(userId: string): Promise<TransactionUserIProps[]> {
     try {
       const query = `
@@ -229,6 +224,75 @@ class TransactionService {
       const error = <Error>e;
       console.error('Error getting transactions by user:', error.message);
       throw new Error('Failed to get transactions');
+    }
+  }
+
+  static async cryptocurrencyExchange(
+    dataSwap: ExchangeDataIProps,
+    transaction: SequelizeTransaction,
+  ) {
+    try {
+      const { walletId, data } = dataSwap;
+
+      const wallet = await Wallet.findByPk(walletId);
+
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      const currentCrypto = wallet.cryptoCurrency;
+
+      if (!currentCrypto) {
+        throw new Error('No crypto currency found in wallet');
+      }
+
+      for (const { id, amount, type, currentAmountCrypto } of data) {
+        if (type === 'decrement' && amount > (currentAmountCrypto ?? 0)) {
+          throw new Error('Insufficient amount to make the change');
+        }
+
+        const parsedAmount = new Decimal(amount as unknown as string);
+        const currentCryptoAmount = new Decimal(currentCrypto[id]);
+
+        let newCryptoAmount: Decimal;
+
+        if (type === 'increment') {
+          newCryptoAmount = currentCryptoAmount.plus(parsedAmount);
+        } else if (type === 'decrement') {
+          newCryptoAmount = currentCryptoAmount.minus(parsedAmount);
+
+          if (newCryptoAmount.lessThan(0)) {
+            throw new Error(`Insufficient ${id} balance in wallet`);
+          }
+        } else {
+          throw new Error('Invalid transaction type');
+        }
+
+        currentCrypto[id] = newCryptoAmount.toNumber();
+
+        await Wallet.update(
+          { cryptoCurrency: currentCrypto },
+          { where: { id: walletId }, transaction },
+        );
+      }
+
+      // Guardar la transacción en la base de datos
+      return await Transaction.create(
+        {
+          originWalletId: walletId,
+          amount: 0,
+          cryptocurrencyId: dataSwap.data[0].id,
+          cryptoFromId: dataSwap.data[0].id,
+          cryptoToId: dataSwap.data[1].id,
+          amountFrom: dataSwap.data[0].amount,
+          amountTo: dataSwap.data[1].amount,
+          typeId: 4,
+        },
+        { transaction },
+      );
+    } catch (e) {
+      const error = <Error>e;
+      throw new Error(`Failed to perform crypto exchange ${error.message}`);
     }
   }
 }
