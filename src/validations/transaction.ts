@@ -1,4 +1,4 @@
-import { body, ValidationChain } from 'express-validator';
+import { body, ValidationChain, param } from 'express-validator';
 
 export const validateSend = (): ValidationChain[] => {
   return [
@@ -78,5 +78,17 @@ export const validateCryptoPurchase = (): ValidationChain[] => {
       .withMessage('originWalletId is required')
       .isString()
       .isUUID(),
+  ];
+};
+
+export const userIdValidate = (): ValidationChain[] => {
+  return [
+    param('userId')
+      .trim()
+      .notEmpty()
+      .withMessage('userId is required')
+      .isString()
+      .isUUID()
+      .withMessage('Must be in UUID format'),
   ];
 };

@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
 import { TransactionController } from '../controllers/transaction.controller';
-import { validateSend, validateCryptoPurchase, validateSwap } from '../validations/transaction';
+import {
+  validateSend,
+  validateCryptoPurchase,
+  validateSwap,
+  userIdValidate,
+} from '../validations/transaction';
 
 const transactionRoutes = Router();
 
@@ -21,5 +26,7 @@ transactionRoutes.post(
   validateSwap(),
   TransactionController.cryptocurrencyExchange,
 );
+
+transactionRoutes.get('/:userId', userIdValidate(), TransactionController.getAllTransactionByUser);
 
 export { transactionRoutes };

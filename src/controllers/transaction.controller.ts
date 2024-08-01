@@ -104,5 +104,20 @@ export class TransactionController {
       next(error);
     }
   };
+
+  static readonly getAllTransactionByUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> => {
+    validateData(req, res);
+    try {
+      const { userId } = req.params;
+      const transactions = await TransactionService.getAllTransactionByUser(userId);
+      return res.status(status.OK).json({ transactions });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
