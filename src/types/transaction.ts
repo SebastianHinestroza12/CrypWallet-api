@@ -2,7 +2,7 @@ import { Optional } from 'sequelize';
 
 export type TransactionTypeAttributes = {
   id: number;
-  name: 'Send' | 'Receive' | 'Buy' | 'Sell' | 'Swap' | 'None';
+  name: 'Send' | 'Receive' | 'Buy' | 'Swap' | 'None';
 };
 
 export type SendTransactionIProps = {
@@ -18,6 +18,18 @@ export type UpdateBalanceIProps = {
   amount: number;
   walletId: string;
   cryptoCurrency: string;
+};
+
+export type ExchangeDataIProps = {
+  walletId: string;
+  data: CryptoExchange[];
+};
+
+export type CryptoExchange = {
+  id: string;
+  currentAmountCrypto?: number;
+  amount: number;
+  type: 'increment' | 'decrement';
 };
 
 export type PaymentDetailIProps = {
