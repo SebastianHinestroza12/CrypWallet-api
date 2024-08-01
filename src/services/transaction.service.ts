@@ -42,13 +42,12 @@ class TransactionService {
         throw new Error('No crypto currency found in wallet');
       }
 
-      if (!(cryptoCurrency in currentCrypto)) {
-        // Verificar si la criptomoneda existe en el objeto
+      if (type === 'decrement' && !(cryptoCurrency in currentCrypto)) {
         throw new Error(`Cryptocurrency ${cryptoCurrency} not found in wallet`);
       }
 
       const parsedAmount = new Decimal(amount as unknown as string);
-      const currentCryptoAmount = new Decimal(currentCrypto[cryptoCurrency]);
+      const currentCryptoAmount = new Decimal(currentCrypto[cryptoCurrency] ?? 0);
 
       // Actualizar el valor de la criptomoneda
       let newCryptoAmount: Decimal;
@@ -85,29 +84,29 @@ class TransactionService {
   ) {
     try {
       const { amount, cryptocurrencyId, destinyWalletId, originWalletId } = data;
-      // save transaction data to database and update balances
 
-      await this.updateWalletBalances(
-        {
-          amount: amount,
-          cryptoCurrency: cryptocurrencyId,
-          type: 'decrement',
-          walletId: originWalletId,
-        },
-        transaction,
-      );
+      const updateBalances = [
+        this.updateWalletBalances(
+          {
+            amount,
+            cryptoCurrency: cryptocurrencyId,
+            type: 'decrement',
+            walletId: originWalletId,
+          },
+          transaction,
+        ),
+        this.updateWalletBalances(
+          {
+            amount,
+            cryptoCurrency: cryptocurrencyId,
+            type: 'increment',
+            walletId: destinyWalletId,
+          },
+          transaction,
+        ),
+      ];
 
-      await this.updateWalletBalances(
-        {
-          amount: amount,
-          cryptoCurrency: cryptocurrencyId,
-          type: 'increment',
-          walletId: destinyWalletId,
-        },
-        transaction,
-      );
-
-      // Guardar la transacción en la base de datos
+      await Promise.all(updateBalances);
       const transfer = await Transaction.create({ ...data, typeId: 1 }, { transaction });
 
       return transfer;
@@ -183,18 +182,20 @@ class TransactionService {
       	tt."name" as type_transaction,
       	t."referenceNumber",
       	t."paymentGateway",
+      	t."cryptoFromId",
+      	t."cryptoToId",
+      	t."amountFrom",
+      	t."amountTo",
       	concat(u2."name",
       	' ',
       	u2."lastName") as user_origin,
       	TO_CHAR(TO_TIMESTAMP(t."date"),
-      	'DD-MM-YYYY HH24:MI') as formatted_date,
-      	case
-      		when t."destinyWalletId" is not null
-              then concat(u."name",
-      		' ',
-      		u."lastName")
-      		else null
-      	end as user_destination
+      	'DD-MM-YYYY') as formatted_date,
+      	CASE
+              WHEN t."destinyWalletId"  IS NOT NULL
+              THEN concat(u."name", ' ', u."lastName")
+              ELSE null
+          END AS user_destination
       from
       	public.transactions t
       left join public.wallets w1 on
@@ -211,7 +212,8 @@ class TransactionService {
       	u2.id = w2."userId"
       where
       	w1."userId" in (:userId)
-      	or w2."userId" in (:userId);
+      	or w2."userId" in (:userId)
+      order by t."id" desc
     `;
 
       const allTransactions: TransactionUserIProps[] = await sequelize.query(query, {

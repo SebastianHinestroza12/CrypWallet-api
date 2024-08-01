@@ -1,12 +1,13 @@
 import { wordDictionary } from '../helper/word.dictionary';
 import crypto from 'crypto';
+import { getEnvVariable } from './env';
 
-const ENCRYPTION_KEY = crypto.randomBytes(32);
+const ENCRYPTION_KEY = Buffer.from(getEnvVariable('ENCRYPTION_KEY'), 'hex');
 const IV_LENGTH = 16;
 
 export const encrypt = (text: string): string => {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
