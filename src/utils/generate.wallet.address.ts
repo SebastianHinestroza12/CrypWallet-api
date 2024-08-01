@@ -10,7 +10,7 @@ export class WalletGenerator {
 
     cryptos.forEach((crypto) => {
       const range = crypto === 'BTC' || crypto === 'ETH' ? 1 : 5;
-      cryptoValues[crypto] = parseFloat((Math.random() * range).toFixed(4));
+      cryptoValues[crypto] = parseFloat((Math.random() * range).toFixed(6));
     });
 
     return cryptoValues;
