@@ -3,11 +3,12 @@ import crypto from 'crypto';
 import { getEnvVariable } from './env';
 
 const ENCRYPTION_KEY = Buffer.from(getEnvVariable('ENCRYPTION_KEY'), 'hex');
+const MODE_AES = getEnvVariable('MODE_AES');
 const IV_LENGTH = 16;
 
 export const encrypt = (text: string): string => {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+  const cipher = crypto.createCipheriv(MODE_AES, ENCRYPTION_KEY, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
