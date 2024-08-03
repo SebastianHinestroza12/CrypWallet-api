@@ -90,6 +90,42 @@ export const Transaction = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
+    cryptoFromId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: Cryptocurrency,
+        key: 'id',
+      },
+      defaultValue: null,
+    },
+    cryptoToId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: Cryptocurrency,
+        key: 'id',
+      },
+      defaultValue: null,
+    },
+    amountFrom: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        notEmpty: false,
+      },
+      defaultValue: null,
+    },
+    amountTo: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        notEmpty: false,
+      },
+      defaultValue: null,
+    },
   },
   {
     timestamps: false,
@@ -107,4 +143,10 @@ Transaction.belongsTo(Cryptocurrency, { foreignKey: 'cryptocurrencyId' });
 
 TransactionType.hasMany(Transaction, { foreignKey: 'typeId' });
 Transaction.belongsTo(TransactionType, { foreignKey: 'typeId' });
+
+Cryptocurrency.hasMany(Transaction, { foreignKey: 'cryptoFromId' });
+Transaction.belongsTo(Cryptocurrency, { foreignKey: 'cryptoFromId' });
+
+Cryptocurrency.hasMany(Transaction, { foreignKey: 'cryptoToId' });
+Transaction.belongsTo(Cryptocurrency, { foreignKey: 'cryptoToId' });
 

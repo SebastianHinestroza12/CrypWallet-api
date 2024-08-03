@@ -6,6 +6,8 @@ export type WalletAttributes = {
   address: string;
   cryptoCurrency?: { [key: string]: number };
   userId: string;
+  isDeleted?: boolean;
+  deletedAt?: number | null;
 };
 
 export type WalletCreationAttributes = Optional<WalletAttributes, 'id'>;

@@ -1,7 +1,7 @@
 import { WalletAttributes } from '../types';
 import { Transaction, QueryTypes } from 'sequelize';
 import { Wallet } from '../models/Wallet';
-import { WalletGenerator } from '../utils';
+import { getCurrentUnixTimestamp, WalletGenerator } from '../utils';
 import { sequelize } from '../database';
 import { DestinationWallet } from '../interfaces/Wallet';
 
@@ -27,6 +27,7 @@ class WalletService {
     return await Wallet.findAll({
       where: {
         userId,
+        isDeleted: false,
       },
     });
   }
@@ -39,31 +40,40 @@ class WalletService {
       {
         where: {
           id: walletId,
+          isDeleted: false,
         },
       },
     );
   }
 
   static async deleteWalletById(walletId: string, userId: string): Promise<void> {
-    const countWallet = await Wallet.findAndCountAll({
+    const countWallet = await Wallet.count({
       where: {
         userId,
+        isDeleted: false,
       },
     });
-    if (countWallet.count < 2) {
+
+    if (countWallet < 2) {
       throw new Error('You must have at least one wallet');
     }
-    await Wallet.destroy({
-      where: {
-        id: walletId,
+
+    //Borrado lógico
+    await Wallet.update(
+      { isDeleted: true, deletedAt: getCurrentUnixTimestamp() },
+      {
+        where: {
+          id: walletId,
+        },
       },
-    });
+    );
   }
 
   static async getWalletById(walletId: string): Promise<WalletAttributes | null> {
     return await Wallet.findOne({
       where: {
         id: walletId,
+        isDeleted: false,
       },
     });
   }
@@ -72,6 +82,7 @@ class WalletService {
     return await Wallet.findOne({
       where: {
         address,
+        isDeleted: false,
       },
     });
   }
@@ -83,6 +94,7 @@ class WalletService {
     const findWallet = await Wallet.findOne({
       where: {
         [field]: value,
+        isDeleted: false,
       },
     });
 

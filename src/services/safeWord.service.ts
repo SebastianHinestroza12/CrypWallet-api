@@ -1,31 +1,30 @@
-import { SafeWordsAttributes } from '../types';
-import { generateSafeWords } from '../utils';
+import { generateSafeWords, decrypt } from '../utils';
 import { SafeWords } from '../models/SafeWords';
 import { Transaction } from 'sequelize';
 
 class SafeWordsService {
-  static async saveSafeWordsByUser(
-    userId: string,
-    transaction: Transaction,
-  ): Promise<SafeWordsAttributes> {
+  static async saveSafeWordsByUser(userId: string, transaction: Transaction): Promise<string[]> {
+    const generatedWords = generateSafeWords();
     const safeWords = await SafeWords.create(
       {
         userId,
-        words: generateSafeWords(),
+        words: generatedWords,
       },
       { transaction },
     );
 
-    return safeWords;
+    return safeWords.words.map((word: string) => decrypt(word));
   }
 
-  static async getSafeWordsById(userId: string): Promise<SafeWordsAttributes | null> {
-    return await SafeWords.findOne({
+  static async getSafeWordsById(userId: string): Promise<string[] | undefined> {
+    const safeWords = await SafeWords.findOne({
       where: {
         userId,
       },
       attributes: ['words'],
     });
+
+    return safeWords?.words.map((word: string) => decrypt(word));
   }
 }
 
