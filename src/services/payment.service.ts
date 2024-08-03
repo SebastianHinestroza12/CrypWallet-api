@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
-// services/payment.service.ts
-import { SessionData } from '../interfaces/session-data-stripe';
 import { PaymentProvider } from '../interfaces/payment-provider';
 
-export class PaymentService {
-  constructor(private paymentProvider: PaymentProvider) {}
+export class PaymentService<T> {
+  constructor(private paymentProvider: PaymentProvider<T>) {}
 
-  async createPayment(sessionData: SessionData) {
+  async createPayment(sessionData: any) {
     return this.paymentProvider.createPayment(sessionData);
   }
 }

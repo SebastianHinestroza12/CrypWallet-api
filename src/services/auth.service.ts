@@ -8,6 +8,7 @@ import { FailedAttempts } from '../models/FailedAttempts';
 import { Transaction } from 'sequelize';
 import { EmailService } from './email.service';
 import { OTP } from '../models/Otp';
+import { decrypt } from '../utils';
 
 class AuthService {
   private hashService: IHashService;
@@ -90,7 +91,11 @@ class AuthService {
       throw new Error('Safe words do not match');
     }
 
-    const isMatch = wordsUser.every((word, index) => word === words[index]);
+    const isMatch = wordsUser.every((word, index) => {
+      const decryptWords = decrypt(word);
+      return decryptWords === words[index];
+    });
+
     if (!isMatch) {
       throw new Error('Incorrect safe words');
     }

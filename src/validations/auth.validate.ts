@@ -108,6 +108,7 @@ const verifyOTP = (): ValidationChain[] => {
       .withMessage('OTP must be exactly 6 characters long'),
   ];
 };
+
 export {
   validateUserRegistration,
   validateUserLogin,
