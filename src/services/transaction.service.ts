@@ -1,16 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Decimal from 'decimal.js';
 import { TransactionType } from '../models/TransactionType';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
-import { Transaction as SequelizeTransaction, QueryTypes } from 'sequelize';
+import { Transaction as SequelizeTransaction, QueryTypes, Optional } from 'sequelize';
 import { sequelize } from '../database';
 import {
   TransactionTypeAttributes,
   SendTransactionIProps,
-  UpdateBalanceIProps,
   PaymentDetailIProps,
   TransactionUserIProps,
-  ExchangeDataIProps,
+  UpdateAmountIProps,
 } from '../types';
 
 class TransactionService {
@@ -25,91 +25,32 @@ class TransactionService {
     return transactionType;
   }
 
-  static async updateWalletBalances(data: UpdateBalanceIProps, transaction: SequelizeTransaction) {
-    try {
-      const { amount, cryptoCurrency, type, walletId } = data;
-      const wallet = await Wallet.findByPk(walletId);
-
-      // Validar que si exista una billetera con ese id
-      if (!wallet) {
-        throw new Error('Wallet not found');
-      }
-
-      // Obtener el objeto de criptomonedas actual
-      const currentCrypto = wallet.cryptoCurrency;
-
-      if (!currentCrypto) {
-        throw new Error('No crypto currency found in wallet');
-      }
-
-      if (type === 'decrement' && !(cryptoCurrency in currentCrypto)) {
-        throw new Error(`Cryptocurrency ${cryptoCurrency} not found in wallet`);
-      }
-
-      const parsedAmount = new Decimal(amount as unknown as string);
-      const currentCryptoAmount = new Decimal(currentCrypto[cryptoCurrency] ?? 0);
-
-      // Actualizar el valor de la criptomoneda
-      let newCryptoAmount: Decimal;
-
-      if (type === 'increment') {
-        newCryptoAmount = currentCryptoAmount.plus(parsedAmount);
-      } else if (type === 'decrement') {
-        newCryptoAmount = currentCryptoAmount.minus(parsedAmount);
-
-        // Verificar que no se vuelva negativo
-        if (newCryptoAmount.lessThan(0)) {
-          throw new Error(`Insufficient ${cryptoCurrency} balance in wallet`);
-        }
-      } else {
-        throw new Error('Invalid transaction type');
-      }
-
-      // Actualizar el valor de la criptomoneda en el objeto
-      currentCrypto[cryptoCurrency] = newCryptoAmount.toNumber();
-
-      await Wallet.update(
-        { cryptoCurrency: currentCrypto },
-        { where: { id: walletId }, transaction },
-      );
-    } catch (e) {
-      const error = <Error>e;
-      throw new Error(`Failed to update wallet balance: ${error.message}`);
-    }
-  }
-
   static async createSendCryptoTransaction(
     data: SendTransactionIProps,
     transaction: SequelizeTransaction,
   ) {
     try {
       const { amount, cryptocurrencyId, destinyWalletId, originWalletId } = data;
-
-      const updateBalances = [
-        this.updateWalletBalances(
-          {
-            amount,
-            cryptoCurrency: cryptocurrencyId,
-            type: 'decrement',
-            walletId: originWalletId,
-          },
-          transaction,
-        ),
-        this.updateWalletBalances(
-          {
-            amount,
-            cryptoCurrency: cryptocurrencyId,
-            type: 'increment',
-            walletId: destinyWalletId,
-          },
-          transaction,
-        ),
+      const updateBalances: UpdateAmountIProps[] = [
+        {
+          id: cryptocurrencyId,
+          amount,
+          type: 'decrement',
+          walletId: originWalletId,
+        },
+        {
+          id: cryptocurrencyId,
+          amount,
+          type: 'increment',
+          walletId: destinyWalletId,
+        },
       ];
 
-      await Promise.all(updateBalances);
-      const transfer = await Transaction.create({ ...data, typeId: 1 }, { transaction });
+      for (const element of updateBalances) {
+        await this.updateWalletBalances(element, transaction);
+      }
 
-      return transfer;
+      return await this.createTransaction({ ...data, typeId: 1 }, transaction);
     } catch (error) {
       throw new Error('Failed to send crypto transaction');
     }
@@ -118,17 +59,7 @@ class TransactionService {
   static async cryptoPurchase(data: PaymentDetailIProps, transaction: SequelizeTransaction) {
     const { amount, cryptoID, idPayment, originWalletId, paymentGateway } = data;
     try {
-      const wallet = await Wallet.findByPk(originWalletId);
-
-      if (!wallet) {
-        throw new Error('Wallet not found');
-      }
-
-      const currentCrypto = wallet.cryptoCurrency;
-
-      if (!currentCrypto) {
-        throw new Error('No crypto currency found in wallet');
-      }
+      const currentCrypto = await this.findAndValidateWallet(originWalletId);
 
       const parsedAmount = new Decimal(amount as unknown as string);
 
@@ -149,19 +80,16 @@ class TransactionService {
         { where: { id: originWalletId }, transaction },
       );
 
-      const buyCrypto = await Transaction.create(
-        {
-          idPayment,
-          originWalletId,
-          amount: parsedAmount.toNumber(),
-          cryptocurrencyId: cryptoID,
-          paymentGateway,
-          typeId: 3,
-        },
-        { transaction },
-      );
+      const data = {
+        idPayment,
+        originWalletId,
+        amount: parsedAmount.toNumber(),
+        cryptocurrencyId: cryptoID,
+        paymentGateway,
+        typeId: 3,
+      };
 
-      return buyCrypto;
+      return await this.createTransaction(data, transaction);
     } catch (e) {
       const error = <Error>e;
       throw new Error(`Failed to perform crypto purchase ${error.message}`);
@@ -229,73 +157,117 @@ class TransactionService {
     }
   }
 
-  static async cryptocurrencyExchange(
-    dataSwap: ExchangeDataIProps,
-    transaction: SequelizeTransaction,
-  ) {
+  static async cryptocurrencyExchange(dataSwap: UpdateAmountIProps[]) {
+    const transaction = await sequelize.transaction();
+
     try {
-      const { walletId, data } = dataSwap;
-
-      const wallet = await Wallet.findByPk(walletId);
-
-      if (!wallet) {
-        throw new Error('Wallet not found');
-      }
-
-      const currentCrypto = wallet.cryptoCurrency;
-
-      if (!currentCrypto) {
-        throw new Error('No crypto currency found in wallet');
-      }
-
-      for (const { id, amount, type, currentAmountCrypto } of data) {
-        if (type === 'decrement' && amount > (currentAmountCrypto ?? 0)) {
-          throw new Error('Insufficient amount to make the change');
+      for (const item of dataSwap) {
+        const transaction = await sequelize.transaction();
+        try {
+          const { jsonCrypto, walletId } = await this.updateWalletBalances(
+            item,
+            transaction,
+            false,
+          );
+          await Wallet.update(
+            { cryptoCurrency: jsonCrypto },
+            { where: { id: walletId }, transaction },
+          );
+          await transaction.commit();
+        } catch (e) {
+          await transaction.rollback();
+          throw e;
         }
-
-        const parsedAmount = new Decimal(amount as unknown as string);
-        const currentCryptoAmount = new Decimal(currentCrypto[id]);
-
-        let newCryptoAmount: Decimal;
-
-        if (type === 'increment') {
-          newCryptoAmount = currentCryptoAmount.plus(parsedAmount);
-        } else if (type === 'decrement') {
-          newCryptoAmount = currentCryptoAmount.minus(parsedAmount);
-
-          if (newCryptoAmount.lessThan(0)) {
-            throw new Error(`Insufficient ${id} balance in wallet`);
-          }
-        } else {
-          throw new Error('Invalid transaction type');
-        }
-
-        currentCrypto[id] = newCryptoAmount.toNumber();
-
-        await Wallet.update(
-          { cryptoCurrency: currentCrypto },
-          { where: { id: walletId }, transaction },
-        );
       }
 
-      // Guardar la transacción en la base de datos
-      return await Transaction.create(
-        {
-          originWalletId: walletId,
-          amount: 0,
-          cryptocurrencyId: dataSwap.data[0].id,
-          cryptoFromId: dataSwap.data[0].id,
-          cryptoToId: dataSwap.data[1].id,
-          amountFrom: dataSwap.data[0].amount,
-          amountTo: dataSwap.data[1].amount,
-          typeId: 4,
-        },
-        { transaction },
-      );
+      const transactionData = {
+        originWalletId: dataSwap[0].walletId,
+        amount: 0,
+        cryptocurrencyId: dataSwap[0].id,
+        cryptoFromId: dataSwap[0].id,
+        cryptoToId: dataSwap[1].id,
+        amountFrom: dataSwap[0].amount,
+        amountTo: dataSwap[1].amount,
+        typeId: 4,
+      };
+
+      const saveTransaction = await this.createTransaction(transactionData, transaction);
+      await transaction.commit();
+      return saveTransaction;
     } catch (e) {
+      await transaction.rollback();
       const error = <Error>e;
       throw new Error(`Failed to perform crypto exchange ${error.message}`);
     }
+  }
+
+  private static async findAndValidateWallet(walletId: string) {
+    const wallet = await Wallet.findByPk(walletId);
+
+    if (!wallet) {
+      throw new Error('Wallet not found');
+    }
+
+    const currentCrypto = wallet.cryptoCurrency;
+
+    if (!currentCrypto) {
+      throw new Error('No crypto currency found in wallet');
+    }
+
+    return currentCrypto;
+  }
+
+  private static async updateWalletBalances(
+    item: UpdateAmountIProps,
+    transaction: SequelizeTransaction,
+    executewithTransaction = true,
+  ) {
+    const { id, amount, type, walletId } = item;
+    const jsonCrypto = await this.findAndValidateWallet(walletId);
+    const amountCrypto = jsonCrypto[id];
+
+    if (type === 'decrement' && (amount > (amountCrypto ?? 0) || !(id in jsonCrypto))) {
+      if (amount > (amountCrypto ?? 0)) {
+        throw new Error('Insufficient amount to make the change');
+      } else {
+        throw new Error(`Cryptocurrency ${id} not found in wallet`);
+      }
+    }
+
+    const parsedAmount = new Decimal(amount as unknown as string);
+    const currentCryptoAmount = new Decimal(amountCrypto ?? 0);
+
+    let newCryptoAmount: Decimal;
+
+    if (type === 'increment') {
+      newCryptoAmount = currentCryptoAmount.plus(parsedAmount);
+    } else if (type === 'decrement') {
+      newCryptoAmount = currentCryptoAmount.minus(parsedAmount);
+
+      if (newCryptoAmount.lessThan(0)) {
+        throw new Error(`Insufficient ${id} balance in wallet`);
+      }
+    } else {
+      throw new Error('Invalid transaction type');
+    }
+
+    jsonCrypto[id] = newCryptoAmount.toNumber();
+
+    if (executewithTransaction) {
+      await Wallet.update({ cryptoCurrency: jsonCrypto }, { where: { id: walletId }, transaction });
+    }
+
+    return {
+      jsonCrypto,
+      walletId,
+    };
+  }
+
+  private static async createTransaction<T extends Optional<any, string> | undefined>(
+    transactionData: T,
+    transaction: SequelizeTransaction,
+  ) {
+    return await Transaction.create(transactionData, { transaction });
   }
 }
 
