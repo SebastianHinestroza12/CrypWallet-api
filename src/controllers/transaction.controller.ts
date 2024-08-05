@@ -3,7 +3,7 @@ import { TransactionService } from '../services/transaction.service';
 import {
   SendTransactionIProps,
   PaymentDetailIProps,
-  ExchangeDataIProps,
+  UpdateAmountIProps,
 } from '../types/transaction';
 import { sequelize } from '../database';
 import status from 'http-status';
@@ -60,11 +60,10 @@ export class TransactionController {
     res: Response,
   ): Promise<Response | void> => {
     validateData(req, res);
-    const transaction = await sequelize.transaction();
+
     try {
-      const dataSwap = req.body as ExchangeDataIProps;
-      const swap = await TransactionService.cryptocurrencyExchange(dataSwap, transaction);
-      await transaction.commit();
+      const dataSwap = req.body as UpdateAmountIProps[];
+      const swap = await TransactionService.cryptocurrencyExchange(dataSwap);
 
       return res.status(status.OK).json({
         message: 'Transaction completed successfully',
@@ -72,7 +71,6 @@ export class TransactionController {
       });
     } catch (e) {
       const error = <Error>e;
-      await transaction.rollback();
       return res.status(status.BAD_REQUEST).json({
         message: `${error.message}`,
       });
