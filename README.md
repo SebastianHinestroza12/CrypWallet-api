@@ -29,7 +29,7 @@ Follow the steps below to install and run CrypWallet:
 
 Before you begin, ensure you have the following prerequisites:
 
-- Docker and Docker Compose installed on your machine.
+- 🐳 Docker and Docker Compose installed on your machine.
 - Node.js and npm (optional for development and local testing).
 
 ### 1. Clone the Repository
@@ -44,27 +44,29 @@ cd CrypWallet-api
 
 Create a `.env` file in the root of the project and configure the following environment variables:
 
-| Variable               | Value                                           | Description                                           |
-|------------------------|-------------------------------------------------|-------------------------------------------------------|
-| `PORT`                 | 3001                                            | Port where the application runs                     |
-| `DB_USER`              | postgres                                        | Database user                                        |
-| `DB_PORT`              | 5432                                            | Database port                                        |
-| `DB_HOST`              | postgres_db                                     | Database host                                        |
-| `DB_NAME`              | YOUR_DB_NAME                                    | Database name                                        |
-| `DB_PASSWORD`          | YOUR_DB_PASSWORD                                | Database password                                    |
-| `JWT_SECRET_KEY`       | YOUR_JWT_SECRET_KEY                             | Secret key for JWT generation                        |
-| `BASE_URL`             | http://localhost:3001                           | Base URL of the application                          |
-| `SMTP_HOST`            | smtp.gmail.com                                 | SMTP server host                                     |
-| `SMTP_PORT`            | 465                                             | SMTP server port                                     |
-| `SMTP_USER`            | YOUR_SMTP_USER                                  | SMTP server user                                     |
-| `SMTP_PASS`            | YOUR_SMTP_PASSWORD                              | SMTP server password                                 |
-| `PGADMIN_PASSWORD`     | YOUR_PGADMIN_PASSWORD                           | Password for PGAdmin                                |
-| `PGADMIN_EMAIL`        | YOUR_PGADMIN_EMAIL                              | Email for PGAdmin                                    |
-| `STRIPE_API_KEY`       | YOUR_STRIPE_API_KEY                             | Stripe API key                                       |
-| `MERCADO_PAGO_API_KEY` | YOUR_MERCADO_PAGO_API_KEY                       | Mercado Pago API key                                 |
-| `ENCRYPTION_KEY`       | 6d2e5b26b6e743e5c6f5d8d34d764d4f876a98e6cbbdcf7a4a8f17e6d0c6d9f6 | Encryption key                                       |
-| `MODE_AES`             | aes-256-cbc                                     | AES encryption mode                                  |
+```json
+{
+  "PORT": "3001",
+  "DB_USER": "postgres",
+  "DB_PORT": "5432",
+  "DB_HOST": "postgres_db",
+  "DB_NAME": "YOUR_DB_NAME",
+  "DB_PASSWORD": "YOUR_DB_PASSWORD",
+  "JWT_SECRET_KEY": "YOUR_JWT_SECRET_KEY",
+  "BASE_URL": "http://localhost:3001",
+  "SMTP_HOST": "smtp.gmail.com",
+  "SMTP_PORT": "465",
+  "SMTP_USER": "YOUR_SMTP_USER",
+  "SMTP_PASS": "YOUR_SMTP_PASSWORD",
+  "PGADMIN_PASSWORD": "YOUR_PGADMIN_PASSWORD",
+  "PGADMIN_EMAIL": "YOUR_PGADMIN_EMAIL",
+  "STRIPE_API_KEY": "YOUR_STRIPE_API_KEY",
+  "MERCADO_PAGO_API_KEY": "YOUR_MERCADO_PAGO_API_KEY",
+  "ENCRYPTION_KEY": "6d2e5b26b6e743e5c6f5d8d34d764d4f876a98e6cbbdcf7a4a8f17e6d0c6d9f6",
+  "MODE_AES": "aes-256-cbc"
+}
 
+```
 
 ### 3. Build and Lift Containers
 
