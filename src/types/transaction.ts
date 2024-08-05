@@ -20,16 +20,11 @@ export type UpdateBalanceIProps = {
   cryptoCurrency: string;
 };
 
-export type ExchangeDataIProps = {
-  walletId: string;
-  data: CryptoExchange[];
-};
-
-export type CryptoExchange = {
+export type UpdateAmountIProps = {
   id: string;
-  currentAmountCrypto?: number;
   amount: number;
   type: 'increment' | 'decrement';
+  walletId: string;
 };
 
 export type PaymentDetailIProps = {
@@ -39,7 +34,6 @@ export type PaymentDetailIProps = {
   paymentGateway: string;
   originWalletId: string;
 };
-
 
 export type TransactionUserIProps = {
   id: number;
