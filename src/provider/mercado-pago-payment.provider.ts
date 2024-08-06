@@ -10,6 +10,7 @@ import { getEnvVariable } from '../utils';
 import { RequestPaymentStripeIprops } from '../interfaces/session-data-stripe';
 
 const mercadoPagoApiKey = getEnvVariable('MERCADO_PAGO_API_KEY');
+const clientUrl = getEnvVariable('CLIENT_URL');
 
 const client = new MercadoPagoConfig({ accessToken: mercadoPagoApiKey });
 
@@ -37,8 +38,8 @@ export class MercadoPagoPaymentProvider implements PaymentProvider<any> {
           email: customer_email,
         },
         back_urls: {
-          success: `http://localhost:3000/success-payment?from=${paymentMethod}`,
-          failure: 'http://localhost:3000/cancel-payment',
+          success: `${clientUrl}/success-payment?from=${paymentMethod}`,
+          failure: `${clientUrl}http://localhost:3000/cancel-payment`,
           pending: '',
         },
         auto_return: 'approved',
