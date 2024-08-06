@@ -21,6 +21,7 @@ class AuthMiddleware {
       /^\/api\/v1\/cryptocurrencies$/,
       /^\/api\/v1\/transaction\/types$/,
       /^\/api\/v1\/auth\/users\/[\w-]+\/update-password$/,
+      /^\/api\/v1\/auth\/profile\/update\/[\w-]+$/,
     ];
   }
 
