@@ -5,7 +5,7 @@ import { SafeWordsService } from '../services/safeWord.service';
 import { VerifySafeWordsRequestBody, UpdatePassword } from '../interfaces';
 import { VerifyOTPPayload } from '../interfaces/Authentication';
 import { WalletService } from '../services/wallet.service';
-import { BcryptHashService, JwtTokenService, GenerateOTP } from '../utils';
+import { BcryptHashService, JwtTokenService, GenerateOTP, getEnvVariable } from '../utils';
 import { sequelize } from '../database';
 import { EmailService } from '../services/email.service';
 import { TransactionService } from '../services/transaction.service';
@@ -58,13 +58,15 @@ class AuthController {
       const getWalletsUser = await WalletService.getWalletByUserId(user.id);
       const safeWords = await SafeWordsService.getSafeWordsById(user.id);
       const getAllTransactions = await TransactionService.getAllTransactionByUser(user.id);
+      const environment = getEnvVariable('NODE_ENV');
 
       res.cookie('token', token, {
         httpOnly: true,
-        sameSite: 'strict',
-        secure: true,
+        sameSite: environment == 'production' ? 'lax' : 'strict',
+        secure: environment === 'production',
         maxAge: 5 * 60 * 60 * 1000, // 5 hours
       });
+
       return res.status(status.OK).json({
         login: true,
         message: 'User logged in successfully',
