@@ -4,6 +4,9 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import { AuthMiddleware } from './auth.middleware';
+import { getEnvVariable } from '../utils';
+
+const clientUrl = getEnvVariable('CLIENT_URL');
 
 export const middlewares = (app: Application): void => {
   app.use(express.urlencoded({ extended: false }));
@@ -12,7 +15,7 @@ export const middlewares = (app: Application): void => {
   app.use(cookieParser());
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: clientUrl,
       credentials: true,
     }),
   );

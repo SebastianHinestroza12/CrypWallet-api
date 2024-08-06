@@ -63,7 +63,8 @@ Create a `.env` file in the root of the project and configure the following envi
   "STRIPE_API_KEY": "YOUR_STRIPE_API_KEY",
   "MERCADO_PAGO_API_KEY": "YOUR_MERCADO_PAGO_API_KEY",
   "ENCRYPTION_KEY": "6d2e5b26b6e743e5c6f5d8d34d764d4f876a98e6cbbdcf7a4a8f17e6d0c6d9f6",
-  "MODE_AES": "aes-256-cbc"
+  "MODE_AES": "aes-256-cbc",
+  "CLIENT_URL": "http://localhost:3000"
 }
 
 ```
