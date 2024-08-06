@@ -6,6 +6,7 @@ import { PaymentProvider } from '../interfaces/payment-provider';
 import { RequestPaymentStripeIprops, SessionData } from '../interfaces/session-data-stripe';
 
 const stripeApiKey = getEnvVariable('STRIPE_API_KEY');
+const clientUrl = getEnvVariable('CLIENT_URL');
 const stripe = new Stripe(stripeApiKey);
 
 export class StripePaymentProvider implements PaymentProvider<Stripe.Checkout.Session> {
@@ -31,8 +32,8 @@ export class StripePaymentProvider implements PaymentProvider<Stripe.Checkout.Se
       mode: 'payment',
       customer_email,
       payment_method_types: ['card'],
-      success_url: `http://localhost:3000/success-payment?from=${paymentMethod}`,
-      cancel_url: 'http://localhost:3000/cancel-payment',
+      success_url: `${clientUrl}/success-payment?from=${paymentMethod}`,
+      cancel_url: `${clientUrl}/cancel-payment`,
     };
     try {
       const session = await stripe.checkout.sessions.create(
