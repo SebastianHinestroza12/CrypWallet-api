@@ -1,12 +1,10 @@
 import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
 import { ITokenService } from '../interfaces/Authentication';
 import { UserAttributes } from '../types';
+import { getEnvVariable } from './env';
 
-const JWT_SECRET_KEY: string = process.env.JWT_SECRET_KEY as string;
+const JWT_SECRET_KEY = getEnvVariable('JWT_SECRET_KEY');
 
-if (!JWT_SECRET_KEY) {
-  throw new Error('Please make sure that all necessary environment variables are set.');
-}
 export class JwtTokenService implements ITokenService {
   generateToken(user: UserAttributes): string {
     const { id, email, name } = user;

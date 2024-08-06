@@ -17,6 +17,7 @@ export const middlewares = (app: Application): void => {
     cors({
       origin: clientUrl,
       credentials: true,
+      allowedHeaders: ['Authorization', 'Content-Type'],
     }),
   );
   app.use(helmet());
