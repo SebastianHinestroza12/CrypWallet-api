@@ -62,7 +62,7 @@ class AuthController {
 
       res.cookie('token', token, {
         httpOnly: true,
-        sameSite: environment == 'production' ? 'lax' : 'strict',
+        sameSite: environment === 'production' ? 'lax' : 'strict',
         secure: environment === 'production',
         maxAge: 5 * 60 * 60 * 1000, // 5 hours
       });
