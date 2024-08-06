@@ -21,7 +21,6 @@ class AuthMiddleware {
       /^\/api\/v1\/cryptocurrencies$/,
       /^\/api\/v1\/transaction\/types$/,
       /^\/api\/v1\/auth\/users\/[\w-]+\/update-password$/,
-      /^\/api\/v1\/auth\/profile\/update\/[\w-]+$/,
     ];
   }
 
@@ -30,7 +29,8 @@ class AuthMiddleware {
       return next();
     }
 
-    const { token } = req.cookies;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
     if (!token || typeof token !== 'string') {
       return res.status(status.UNAUTHORIZED).json({ message: 'Access denied. No token provided.' });
